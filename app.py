@@ -1,5 +1,6 @@
 import flask
 import os
+import json
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -29,8 +30,10 @@ SCOPES = [
 ]
 
 def get_planilha():
-    creds = Credentials.from_service_account_file(
-        "credenciais.json",
+    creds_json = os.environ.get("GOOGLE_CREDENTIALS")
+    creds_dict = json.loads(creds_json)
+    creds = Credentials.from_service_account_info(
+        creds_dict,
         scopes=SCOPES
     )
     cliente_sheet = gspread.authorize(creds)
