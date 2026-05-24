@@ -28,14 +28,13 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_file(
-    "credenciais.json",
-    scopes=SCOPES
-)
-
-cliente_sheet = gspread.authorize(creds)
-
-planilha = cliente_sheet.open(NOME_PLANILHA).sheet1
+def get_planilha():
+    creds = Credentials.from_service_account_file(
+        "credenciais.json",
+        scopes=SCOPES
+    )
+    cliente_sheet = gspread.authorize(creds)
+    return cliente_sheet.open(NOME_PLANILHA).sheet1
 
 # ══════════════════════════════════════════════════════════════════
 # FLASK
@@ -57,6 +56,7 @@ def formulario():
 
 @app.route("/enviar", methods=["POST"])
 def enviar():
+    planilha = get_planilha()
 
     # ══════════════════════════════════════════════════════════════
     # DADOS PESSOAIS
