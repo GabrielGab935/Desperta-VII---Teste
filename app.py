@@ -1,27 +1,22 @@
 import flask
 import os
+import json
 import gspread
 from google.oauth2.service_account import Credentials
 
 import cloudinary
 import cloudinary.uploader
 
-# IMPORTAR GERADOR DE CRACHÁ
 from gerar_cracha import gerar_cracha
 
 # ══════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO CLOUDINARY
 # ══════════════════════════════════════════════════════════════════
 cloudinary.config(
-    cloud_name="dtniy0neq",
-    api_key="772442582939877",
-    api_secret="2DJVkFR0ESs7bKVyqhupNSXAE9A"
+    cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
+    api_key=os.environ["CLOUDINARY_API_KEY"],
+    api_secret=os.environ["CLOUDINARY_API_SECRET"]
 )
-
-# ══════════════════════════════════════════════════════════════════
-# CONFIGURAÇÕES
-# ══════════════════════════════════════════════════════════════════
-NOME_PLANILHA = "Desperta VII"
 
 # ══════════════════════════════════════════════════════════════════
 # GOOGLE SHEETS
@@ -31,14 +26,11 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_file(
-    "credenciais.json",
-    scopes=SCOPES
-)
+credentials_info = json.loads(os.environ["GOOGLE_CREDENTIALS_JSON"])
+creds = Credentials.from_service_account_info(credentials_info, scopes=SCOPES)
 
 cliente_sheet = gspread.authorize(creds)
-
-planilha = cliente_sheet.open(NOME_PLANILHA).sheet1
+planilha = cliente_sheet.open("Desperta VII").sheet1
 
 # ══════════════════════════════════════════════════════════════════
 # FLASK
