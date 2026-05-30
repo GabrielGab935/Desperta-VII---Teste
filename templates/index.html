@@ -237,58 +237,265 @@
     color: var(--gold);
   }
 
-  /* ── SOBRE ── */
-  .sobre {
+   /* ── QUADRO DE MEMÓRIAS ── */
+ /* ── QUADRO DE MEMÓRIAS ── */
+  .memorias {
     background: var(--dark-2);
+    padding: 5rem 1.5rem;
   }
 
-  .sobre p {
-    font-size: 14px;
+  .memorias-intro {
+    margin-bottom: 2.5rem;
+    text-align: left;
+  }
+
+  .memorias-intro .section-tag {
+    text-align: left;
+  }
+
+  .memorias-intro-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 8vw, 2.8rem);
+    font-weight: 300;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .memorias-intro-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .memorias-intro-desc {
+    font-size: 19px;
     line-height: 1.9;
     color: var(--text-muted);
-    margin-bottom: 2.5rem;
+    max-width: 340px;
   }
 
-  .pilares {
+  /* Parede de cortiça */
+  .cork-board {
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(201,168,76,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(201,168,76,0.03) 0%, transparent 50%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(255,255,255,0.01) 3px,
+        rgba(255,255,255,0.01) 4px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 3px,
+        rgba(255,255,255,0.01) 3px,
+        rgba(255,255,255,0.01) 4px
+      ),
+      linear-gradient(145deg, #2a1f0e 0%, #1e1508 30%, #2d2010 60%, #1a1206 100%);
+    border-radius: 12px;
+    padding: 1.5rem 1rem 2rem;
+    border: 2px solid rgba(201,168,76,0.2);
+    box-shadow:
+      inset 0 0 40px rgba(0,0,0,0.5),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+  }
+
+  /* Parafusos nos cantos */
+  .cork-board::before,
+  .cork-board::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #d4a843, #8a6520);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2);
+    top: 14px;
+  }
+  .cork-board::before { left: 14px; }
+  .cork-board::after  { right: 14px; }
+
+  .cork-board-inner-corners::before,
+  .cork-board-inner-corners::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #d4a843, #8a6520);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2);
+    bottom: 14px;
+  }
+  .cork-board-inner-corners::before { left: 14px; }
+  .cork-board-inner-corners::after  { right: 14px; }
+
+  /* Grid de polaroids */
+  .polaroid-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    padding: 0.5rem;
+  }
+
+  /* Card polaroid */
+  .polaroid {
+    background: #f5f0e8;
+    border-radius: 3px;
+    padding: 8px 8px 36px;
+    box-shadow:
+      0 4px 12px rgba(0,0,0,0.5),
+      0 1px 3px rgba(0,0,0,0.3),
+      inset 0 0 0 0.5px rgba(0,0,0,0.08);
+    position: relative;
+    transform-origin: center bottom;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: default;
+  }
+
+  /* Rotações alternadas para parecer pregado na parede */
+  .polaroid:nth-child(3n+1) { transform: rotate(-1.5deg); }
+  .polaroid:nth-child(3n+2) { transform: rotate(0.8deg); }
+  .polaroid:nth-child(3n)   { transform: rotate(-0.5deg); }
+  .polaroid:nth-child(4)    { transform: rotate(1.2deg); }
+  .polaroid:nth-child(7)    { transform: rotate(-2deg); }
+  .polaroid:nth-child(10)   { transform: rotate(1.8deg); }
+
+  .polaroid:hover {
+    transform: rotate(0deg) scale(1.04) translateY(-4px);
+    box-shadow:
+      0 12px 28px rgba(0,0,0,0.6),
+      0 4px 8px rgba(0,0,0,0.3);
+    z-index: 10;
+  }
+
+  /* Pino vermelho */
+  .pin {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px; height: 14px;
+    z-index: 5;
+  }
+
+  .pin::before {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff6b6b, #c0392b);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.3);
+    top: 0; left: 1px;
+  }
+
+  .pin::after {
+    content: '';
+    position: absolute;
+    width: 2px; height: 8px;
+    background: linear-gradient(to bottom, #888, #555);
+    bottom: -8px;
+    left: 6px;
+    border-radius: 0 0 1px 1px;
+  }
+
+  /* Área da foto dentro do polaroid */
+  .polaroid-foto {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #c8c0b0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 1px;
+  }
+
+  /* ✅ IMAGEM: substitua o src abaixo pelo caminho da sua foto
+     Exemplo: src="imagens/retiro_2013.jpg" */
+  .polaroid-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: sepia(0.15) brightness(0.92);
+    transition: filter 0.3s;
+  }
+
+  .polaroid:hover .polaroid-foto img {
+    filter: sepia(0) brightness(1);
+  }
+
+  /* Placeholder quando não há foto */
+  .polaroid-foto-placeholder {
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #bab2a2, #a8a090);
+    gap: 4px;
   }
 
-  .pilar {
-    display: flex;
-    gap: 1.25rem;
-    align-items: flex-start;
-    padding: 1.25rem;
-    border: 0.5px solid rgba(201,168,76,0.15);
-    border-radius: 8px;
-    background: rgba(201,168,76,0.03);
-    transition: border-color 0.3s;
+  .polaroid-foto-placeholder span:first-child {
+    font-size: 1.4rem;
+    opacity: 0.5;
   }
-  .pilar:hover { border-color: rgba(170, 129, 14, 0.763); }
 
-  .pilar-icon {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: rgba(201,168,76,0.12);
-    display: flex; align-items: center; justify-content: center;
+  .polaroid-foto-placeholder span:last-child {
+    font-size: 8px;
+    color: rgba(0,0,0,0.35);
+    letter-spacing: 0.05em;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Texto do polaroid (ano, título, desc) */
+  .polaroid-body {
+    padding: 6px 2px 0;
+  }
+
+  .polaroid-ano {
+    font-family: 'Montserrat', sans-serif;
     font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #333;
+    margin-bottom: 1px;
+  }
+
+  .polaroid-tema-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px;
+    margin-bottom: 3px;
+  }
+
+  .polaroid-tema {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.2;
+    flex: 1;
+  }
+
+  .polaroid-desperta-tag {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 6px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #a07830;
+    white-space: nowrap;
     flex-shrink: 0;
   }
 
-  .pilar h3 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
-  .pilar p {
-    font-size: 12px;
-    line-height: 1.7;
-    color: var(--text-muted);
-    margin: 0;
+  .polaroid-desc {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 17px;
+    color: #555;
+    line-height: 1.5;
+    font-weight: 300;
   }
 
   /* ── RETIRO Foto ── */
@@ -858,38 +1065,280 @@
 </section>
 
 <!-- SOBRE -->
-<section class="sobre" id="sobre">
-  <div class="reveal">
+<!-- ── HTML: cole no lugar desejado dentro do index.html ── -->
+
+<section class="memorias" id="memorias">
+
+  <!-- Introdução -->
+  <div class="memorias-intro reveal">
     <span class="section-tag">Quem somos</span>
-    <h2 class="section-title">Sobre o grupo <em>Yeshua</em></h2>
-    <div class="gold-line"></div>
-    <p>Somos um grupo de jovens cristãos que se reúne para viver a fé com alegria e profundidade. Acreditamos que Jesus é o coração da nossa história — e o Desperta nasce desse desejo de despertar nele cada jovem que ainda não experimentou esse amor.</p>
+    <h2 class="memorias-intro-title">Nosso quadro de <em>memórias</em></h2>
+    <p class="memorias-intro-desc">
+      Desde 2013, o grupo Yeshua tem sido casa, oração e missão para muitos jovens. Cada
+      Desperta deixou marcas — aqui ficam algumas delas, penduradas como num mural de
+      recordações.
+    </p>
   </div>
 
-  <div class="pilares reveal">
-    <div class="pilar">
-            <div class="pilar-icon">🔥</div>
-      <div>
-        <h3>Fé viva</h3>
-        <p>Um espaço para acender ou reacender o fogo do encontro pessoal com Jesus.</p>
-      </div>
-    </div>
+  <!-- Parede de cortiça -->
+  <div class="cork-board reveal">
+    <div class="cork-board-inner-corners"></div>
 
-    <div class="pilar">
-      <div class="pilar-icon">🤝</div>
-      <div>
-        <h3>Comunidade</h3>
-        <p>Caminhar junto, partilhar a vida, formar amizades que sustentam a fé.</p>
+    <div class="polaroid-grid">
+
+      <!-- ✅ Para cada card: troque o src da imagem pelo caminho real.
+           Exemplo: src="imagens/retiro_2013.jpg"
+           Se não tiver foto, remova a tag <img> e deixe o placeholder. -->
+
+      <!-- 2013 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2013: src="imagens/retiro_2013.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2013.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2013</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">O começo</span>
+            <span class="polaroid-desperta-tag">Desperta I</span>
+          </div>
+          <p class="polaroid-desc">Nasceu o Desperta — um sonho de despertar jovens para Cristo do jeito que só a juventude parece.</p>
+        </div>
       </div>
-    </div>
-    <div class="pilar">
-      <div class="pilar-icon">🎵</div>
-      <div>
-        <h3>Adoração</h3>
-        <p>Louvor, oração e momentos de silêncio para escutar o coração de Deus.</p>
+
+      <!-- 2014 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2014: src="imagens/retiro_2014.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2014.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2014</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Raízes</span>
+            <span class="polaroid-desperta-tag">Desperta II</span>
+          </div>
+          <p class="polaroid-desc">A oportunidade de firmar e laços ainda mais profundos e a sustentar a caminhada da fé.</p>
+        </div>
       </div>
-    </div>
-  </div>
+
+      <!-- 2015 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2015: src="imagens/retiro_2015.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2015.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2015</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Crescendo juntos</span>
+            <span class="polaroid-desperta-tag">Desperta III</span>
+          </div>
+          <p class="polaroid-desc">Mais jovens chegam, novos servos se envolvem e a missão ganha força.</p>
+        </div>
+      </div>
+
+      <!-- 2016 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2016: src="imagens/retiro_2016.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2016.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2016</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Fogo que arde</span>
+            <span class="polaroid-desperta-tag">Desperta IV</span>
+          </div>
+          <p class="polaroid-desc">Um ano marcado por conversões profundas e histórias bonitas marcadas com Jesus.</p>
+        </div>
+      </div>
+
+      <!-- 2017 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2017: src="imagens/retiro_2017.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2017.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2017</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Família Yeshua</span>
+            <span class="polaroid-desperta-tag">Desperta V</span>
+          </div>
+          <p class="polaroid-desc">O grupo se reconhece como família — partilhando vida, oração e missão.</p>
+        </div>
+      </div>
+
+      <!-- 2018 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2018: src="imagens/retiro_2018.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2018.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2018</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Sem olhar atrás</span>
+            <span class="polaroid-desperta-tag">Desperta VI</span>
+          </div>
+          <p class="polaroid-desc">Os jovens saem o Desperta para fazer missão, partilha, evangelização e serviço.</p>
+        </div>
+      </div>
+
+      <!-- 2019 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2019: src="imagens/retiro_2019.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2019.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2019</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Renovo</span>
+            <span class="polaroid-desperta-tag">Desperta</span>
+          </div>
+          <p class="polaroid-desc">Novas formações, novos dinâmicos, mesmo coração: acolher Cristo para jovens.</p>
+        </div>
+      </div>
+
+      <!-- 2020 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+         <span>🖼</span><span>retiro_2020.jpg</span>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2020</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Mesmo durante, unidos</span>
+            <span class="polaroid-desperta-tag">Desperta</span>
+          </div>
+          <p class="polaroid-desc">A pandemia chegou, mas a fé não parou — amor e orações sustentam o grupo.</p>
+        </div>
+      </div>
+
+      <!-- 2021 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2021: src="imagens/retiro_2021.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2021.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2021</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Volta ao encontro</span>
+            <span class="polaroid-desperta-tag">Desperta</span>
+          </div>
+          <p class="polaroid-desc">A presença voltou a todo o nosso presencialmente — pedido por cada abraço.</p>
+        </div>
+      </div>
+
+      <!-- 2022 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2022: src="imagens/retiro_2022.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2022.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2022</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Reconstrução</span>
+            <span class="polaroid-desperta-tag">Desperta</span>
+          </div>
+          <p class="polaroid-desc">Superando as dificuldades, novos servos e a reconstrução da melhor comunidade.</p>
+        </div>
+      </div>
+
+      <!-- 2023 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2023: src="imagens/retiro_2023.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2023.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2023</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">10 anos de Desperta</span>
+            <span class="polaroid-desperta-tag">Desperta</span>
+          </div>
+          <p class="polaroid-desc">Uma década celebrando o Sinal de Deus na vida de tantos jovens.</p>
+        </div>
+      </div>
+
+      <!-- 2024 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2024: src="imagens/retiro_2024.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2024.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2024</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Despertar</span>
+            <span class="polaroid-desperta-tag">Desperta</span>
+          </div>
+          <p class="polaroid-desc">A comunidade se aprofundando numa nova formação para novas missionários.</p>
+        </div>
+      </div>
+
+      <!-- 2025 -->
+      <div class="polaroid">
+        <div class="pin"></div>
+        <div class="polaroid-foto">
+          <!-- ✅ FOTO 2025: src="imagens/retiro_2025.jpg" -->
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span><span>retiro_2025.jpg</span>
+          </div>
+        </div>
+        <div class="polaroid-body">
+          <div class="polaroid-ano">2025</div>
+          <div class="polaroid-tema-row">
+            <span class="polaroid-tema">Desperta VI</span>
+            <span class="polaroid-desperta-tag">Desperta VI</span>
+          </div>
+          <p class="polaroid-desc">Um retiro inesquecível — Deus para estar com vocês. Agora é 2026.</p>
+        </div>
+      </div>
+
+    </div><!-- fim .polaroid-grid -->
+  </div><!-- fim .cork-board -->
+
+</section>
+
 </section>
 
 <!-- FOTO GRUPO -->
