@@ -1,0 +1,155 @@
+from PIL import Image, ImageDraw, ImageFont
+import requests
+from io import BytesIO
+import cloudinary.uploader
+import os
+
+def gerar_cracha(nome, link_foto):
+
+    # ==================================================
+    # BAIXAR FOTO
+    # ==================================================
+    response = requests.get(link_foto)
+
+    foto = Image.open(
+        BytesIO(response.content)
+    ).convert("RGBA")
+
+    # ==================================================
+    # TEMPLATE
+    # ==================================================
+    base = Image.open(
+        "modelos/cracha_em_branco_VII_Desperta.png"
+    ).convert("RGBA")
+
+    # ==================================================
+    # FOTO CIRCULAR
+    # ==================================================
+
+    diametro = 250
+
+    foto = foto.resize(
+        (diametro, diametro)
+    )
+
+    mascara = Image.new(
+        "L",
+        (diametro, diametro),
+        0
+    )
+
+    draw_mascara = ImageDraw.Draw(mascara)
+
+    draw_mascara.ellipse(
+        (0, 0, diametro, diametro),
+        fill=255
+    )
+
+    foto.putalpha(mascara)
+
+    # ==================================================
+    # CENTRO DO CÍRCULO DO TEMPLATE
+    # ==================================================
+    # AJUSTE FINO AQUI SE NECESSÁRIO
+
+    centro_x = 632
+    centro_y = 216
+
+    pos_x = int(centro_x - diametro / 2)
+    pos_y = int(centro_y - diametro / 2)
+
+    base.paste(
+        foto,
+        (pos_x, pos_y),
+        foto
+    )
+
+    # ==================================================
+    # TEXTO
+    # ==================================================
+
+    draw = ImageDraw.Draw(base)
+
+    # TAMANHO AUTOMÁTICO
+    if len(nome) > 30:
+        tamanho_fonte = 42
+    elif len(nome) > 20:
+        tamanho_fonte = 50
+    else:
+        tamanho_fonte = 68
+
+    # ==========================================
+    # ALTERAR FONTE AQUI
+    # ==========================================
+
+    fonte = ImageFont.truetype(
+        "arial.ttf",
+        tamanho_fonte
+    )
+
+    # ==========================================
+    # ALTERAR COR AQUI
+    # ==========================================
+
+    cor_nome = (0, 0, 0)
+
+    # ==========================================
+    # MEDIDAS DO TEXTO
+    # ==========================================
+
+    bbox = draw.textbbox(
+        (0, 0),
+        nome,
+        font=fonte
+    )
+
+    largura_texto = bbox[2] - bbox[0]
+    altura_texto = bbox[3] - bbox[1]
+
+    # ==================================================
+    # FAIXA BRANCA
+    # ==================================================
+
+    faixa_x = 35
+    faixa_y = 930
+
+    faixa_largura = 730
+    faixa_altura = 120
+
+    centro_faixa_x = faixa_x + (faixa_largura / 2)
+    centro_faixa_y = faixa_y + (faixa_altura / 2)
+
+    x_texto = centro_faixa_x - (largura_texto / 2)
+
+    y_texto = centro_faixa_y - (altura_texto / 2) - 15
+
+    draw.text(
+        (x_texto, y_texto),
+        nome,
+        fill=cor_nome,
+        font=fonte
+    )
+
+    # ==================================================
+    # SALVAR TEMPORÁRIO
+    # ==================================================
+
+    arquivo = f"{nome}.png"
+
+    base.save(
+        arquivo,
+        quality=100
+    )
+
+    # ==================================================
+    # UPLOAD CLOUDINARY
+    # ==================================================
+
+    upload = cloudinary.uploader.upload(
+        arquivo,
+        folder="crachas_desperta"
+    )
+
+    os.remove(arquivo)
+
+    return upload["secure_url"]
