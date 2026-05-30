@@ -1,11 +1,13 @@
 import flask
 import os
-import json
 import gspread
 from google.oauth2.service_account import Credentials
 
 import cloudinary
 import cloudinary.uploader
+
+# IMPORTAR GERADOR DE CRACHÁ
+from gerar_cracha import gerar_cracha
 
 # ══════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO CLOUDINARY
@@ -29,15 +31,14 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-def get_planilha():
-    creds_json = os.environ.get("GOOGLE_CREDENTIALS")
-    creds_dict = json.loads(creds_json)
-    creds = Credentials.from_service_account_info(
-        creds_dict,
-        scopes=SCOPES
-    )
-    cliente_sheet = gspread.authorize(creds)
-    return cliente_sheet.open(NOME_PLANILHA).sheet1
+creds = Credentials.from_service_account_file(
+    "credenciais.json",
+    scopes=SCOPES
+)
+
+cliente_sheet = gspread.authorize(creds)
+
+planilha = cliente_sheet.open(NOME_PLANILHA).sheet1
 
 # ══════════════════════════════════════════════════════════════════
 # FLASK
@@ -49,25 +50,39 @@ app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 # ══════════════════════════════════════════════════════════════════
 # ROTAS
 # ══════════════════════════════════════════════════════════════════
+
 @app.route("/")
 def home():
     return flask.render_template("index.html")
+
 
 @app.route("/formulario")
 def formulario():
     return flask.render_template("formulario.html")
 
+
 @app.route("/enviar", methods=["POST"])
 def enviar():
-    planilha = get_planilha()
 
     # ══════════════════════════════════════════════════════════════
     # DADOS PESSOAIS
     # ══════════════════════════════════════════════════════════════
     nome = flask.request.form.get("nome", "").strip()
-    telefone = flask.request.form.get("telefone", "").strip()
-    email = flask.request.form.get("email", "").strip()
-    data_nascimento = flask.request.form.get("data_nascimento", "").strip()
+
+    telefone = flask.request.form.get(
+        "telefone",
+        ""
+    ).strip()
+
+    email = flask.request.form.get(
+        "email",
+        ""
+    ).strip()
+
+    data_nascimento = flask.request.form.get(
+        "data_nascimento",
+        ""
+    ).strip()
 
     # ══════════════════════════════════════════════════════════════
     # RESPONSÁVEL
@@ -127,6 +142,7 @@ def enviar():
     # FOTO
     # ══════════════════════════════════════════════════════════════
     link_foto = ""
+    link_cracha = ""
 
     foto = flask.request.files.get("foto_participante")
 
@@ -134,20 +150,29 @@ def enviar():
 
         try:
 
+            # UPLOAD DA FOTO
             resultado = cloudinary.uploader.upload(foto)
 
             link_foto = resultado["secure_url"]
 
+            # GERAR CRACHÁ AUTOMÁTICO
+            link_cracha = gerar_cracha(
+                nome,
+                link_foto
+            )
+
         except Exception as e:
 
-            print(f"[CLOUDINARY ERROR] {e}")
+            print(f"[ERRO CLOUDINARY] {e}")
 
             link_foto = f"Erro: {e}"
+            link_cracha = f"Erro: {e}"
 
     # ══════════════════════════════════════════════════════════════
     # SALVAR NA PLANILHA
     # ══════════════════════════════════════════════════════════════
     planilha.append_row([
+
         nome,
         telefone,
         email,
@@ -166,7 +191,8 @@ def enviar():
         remedio,
         nome_medicamento,
 
-        link_foto
+        link_foto,
+        link_cracha
 
     ], value_input_option="USER_ENTERED")
 
@@ -183,5 +209,10 @@ def enviar():
 # INICIAR APP
 # ══════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
+
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
