@@ -60,7 +60,101 @@
     letter-spacing: 0.02em;
   }
 
-  .nav-menu { font-size: 22px; color: var(--text); cursor: pointer; line-height: 1; }
+  .nav-menu {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 22px;
+    cursor: pointer;
+  }
+
+  /* ── MENU LATERAL ── */
+
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: 0.3s;
+    z-index: 199;
+  }
+
+  .nav-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .nav-drawer {
+    position: fixed;
+    top: 0;
+    right: -300px;
+
+    width: 280px;
+    height: 100vh;
+
+    background: var(--blue_nav);
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 2rem;
+
+    transition: right 0.3s ease;
+
+    z-index: 200;
+
+    border-left: 1px solid rgba(201,168,76,0.15);
+  }
+
+  .nav-drawer.active {
+    right: 0;
+  }
+
+  .nav-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 2rem;
+  }
+
+  .nav-drawer-header span {
+    color: var(--gold);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .nav-close {
+    background: none;
+    border: none;
+
+    color: white;
+
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+
+  .nav-drawer a {
+    color: var(--text);
+
+    text-decoration: none;
+
+    padding: 1rem 0;
+
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+
+    transition: 0.2s;
+  }
+
+  .nav-drawer a:hover {
+    color: var(--gold);
+    padding-left: 8px;
+  }
+
 
   /* ── HERO ── */
   .hero {
@@ -243,16 +337,16 @@
     background: var(--dark-2);
     padding: 5rem 1.5rem;
   }
-
+ 
   .memorias-intro {
     margin-bottom: 2.5rem;
-    text-align: left;
+    text-align: center;
   }
-
+ 
   .memorias-intro .section-tag {
-    text-align: left;
+    text-align: center;
   }
-
+ 
   .memorias-intro-title {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(2rem, 8vw, 2.8rem);
@@ -261,19 +355,20 @@
     margin-bottom: 1rem;
     color: var(--text);
   }
-
+ 
   .memorias-intro-title em {
     font-style: italic;
     color: var(--gold);
   }
-
+ 
   .memorias-intro-desc {
     font-size: 19px;
     line-height: 1.9;
     color: var(--text-muted);
-    max-width: 340px;
+    margin-bottom: 2rem;
+    text-align: center;
   }
-
+ 
   /* Parede de cortiça */
   .cork-board {
     background:
@@ -302,7 +397,7 @@
       0 8px 32px rgba(0,0,0,0.6);
     position: relative;
   }
-
+ 
   /* Parafusos nos cantos */
   .cork-board::before,
   .cork-board::after {
@@ -316,7 +411,7 @@
   }
   .cork-board::before { left: 14px; }
   .cork-board::after  { right: 14px; }
-
+ 
   .cork-board-inner-corners::before,
   .cork-board-inner-corners::after {
     content: '';
@@ -329,7 +424,7 @@
   }
   .cork-board-inner-corners::before { left: 14px; }
   .cork-board-inner-corners::after  { right: 14px; }
-
+ 
   /* Grid de polaroids */
   .polaroid-grid {
     display: grid;
@@ -337,7 +432,7 @@
     gap: 1.25rem;
     padding: 0.5rem;
   }
-
+ 
   /* Card polaroid */
   .polaroid {
     background: #f5f0e8;
@@ -352,7 +447,7 @@
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     cursor: default;
   }
-
+ 
   /* Rotações alternadas para parecer pregado na parede */
   .polaroid:nth-child(3n+1) { transform: rotate(-1.5deg); }
   .polaroid:nth-child(3n+2) { transform: rotate(0.8deg); }
@@ -360,7 +455,7 @@
   .polaroid:nth-child(4)    { transform: rotate(1.2deg); }
   .polaroid:nth-child(7)    { transform: rotate(-2deg); }
   .polaroid:nth-child(10)   { transform: rotate(1.8deg); }
-
+ 
   .polaroid:hover {
     transform: rotate(0deg) scale(1.04) translateY(-4px);
     box-shadow:
@@ -368,7 +463,7 @@
       0 4px 8px rgba(0,0,0,0.3);
     z-index: 10;
   }
-
+ 
   /* Pino vermelho */
   .pin {
     position: absolute;
@@ -378,7 +473,7 @@
     width: 14px; height: 14px;
     z-index: 5;
   }
-
+ 
   .pin::before {
     content: '';
     position: absolute;
@@ -388,7 +483,7 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.3);
     top: 0; left: 1px;
   }
-
+ 
   .pin::after {
     content: '';
     position: absolute;
@@ -398,7 +493,7 @@
     left: 6px;
     border-radius: 0 0 1px 1px;
   }
-
+ 
   /* Área da foto dentro do polaroid */
   .polaroid-foto {
     width: 100%;
@@ -408,7 +503,7 @@
     overflow: hidden;
     border-radius: 1px;
   }
-
+ 
   /* ✅ IMAGEM: substitua o src abaixo pelo caminho da sua foto
      Exemplo: src="imagens/retiro_2013.jpg" */
   .polaroid-foto img {
@@ -419,11 +514,11 @@
     filter: sepia(0.15) brightness(0.92);
     transition: filter 0.3s;
   }
-
+ 
   .polaroid:hover .polaroid-foto img {
     filter: sepia(0) brightness(1);
   }
-
+ 
   /* Placeholder quando não há foto */
   .polaroid-foto-placeholder {
     width: 100%;
@@ -435,24 +530,25 @@
     background: linear-gradient(135deg, #bab2a2, #a8a090);
     gap: 4px;
   }
-
+ 
   .polaroid-foto-placeholder span:first-child {
     font-size: 1.4rem;
     opacity: 0.5;
   }
-
+ 
   .polaroid-foto-placeholder span:last-child {
     font-size: 8px;
     color: rgba(0,0,0,0.35);
     letter-spacing: 0.05em;
     font-family: 'Montserrat', sans-serif;
   }
-
+ 
   /* Texto do polaroid (ano, título, desc) */
   .polaroid-body {
     padding: 6px 2px 0;
+    text-align: center;
   }
-
+ 
   .polaroid-ano {
     font-family: 'Montserrat', sans-serif;
     font-size: 16px;
@@ -461,24 +557,24 @@
     color: #333;
     margin-bottom: 1px;
   }
-
+ 
   .polaroid-tema-row {
+    flex-direction: column;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 4px;
     margin-bottom: 3px;
   }
-
+ 
   .polaroid-tema {
     font-family: 'Cormorant Garamond', serif;
     font-size: 22px;
     font-weight: 600;
     color: #1a1a1a;
     line-height: 1.2;
-    flex: 1;
   }
-
+ 
   .polaroid-desperta-tag {
     font-family: 'Montserrat', sans-serif;
     font-size: 6px;
@@ -489,13 +585,61 @@
     white-space: nowrap;
     flex-shrink: 0;
   }
-
+ 
   .polaroid-desc {
     font-family: 'Montserrat', sans-serif;
     font-size: 17px;
     color: #555;
     line-height: 1.5;
     font-weight: 300;
+  }
+ 
+  /* ── MEMÓRIAS — RESPONSIVO MOBILE ── */
+  @media (max-width: 700px) {
+    .memorias {
+      padding: 3rem 1rem;
+    }
+ 
+    .memorias-intro-desc {
+      max-width: 100%;
+      font-size: 16px;
+    }
+ 
+    /* Cork board sem padding excessivo */
+    .cork-board {
+      padding: 1.2rem 0.6rem 1.5rem;
+    }
+ 
+    /* 1 coluna em telas muito pequenas */
+    .polaroid-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      padding: 0.5rem 0.25rem;
+    }
+ 
+    /* Remove rotações no mobile — evitam corte nas bordas */
+    .polaroid,
+    .polaroid:nth-child(3n+1),
+    .polaroid:nth-child(3n+2),
+    .polaroid:nth-child(3n),
+    .polaroid:nth-child(4),
+    .polaroid:nth-child(7),
+    .polaroid:nth-child(10) {
+      transform: none;
+    }
+ 
+    /* Textos do polaroid maiores pois há mais espaço vertical */
+    .polaroid-ano   { font-size: 14px; }
+    .polaroid-tema  { font-size: 20px; }
+    .polaroid-desc  { font-size: 13px; }
+  }
+ 
+  @media (min-width: 701px) and (max-width: 1024px) {
+    /* Tablet: 2 colunas */
+    .polaroid-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
   }
 
   /* ── RETIRO Foto ── */
@@ -572,7 +716,7 @@
   }
 
   .retiro-desc {
-    font-size: 13px;
+    font-size: 19px;
     line-height: 1.9;
     color: var(--text-muted);
     margin-bottom: 2rem;
@@ -613,16 +757,16 @@
        background: var(--dark-2);
   }
   
-.local-container {
+  .local-container {
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 50px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 80px 20px;
-}
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 50px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 20px;
+  }
 
 .local-content {
   flex: 1;
@@ -1042,9 +1186,29 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo"><img src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}"></div>
-  <div class="nav-menu">☰</div>
+  <div class="nav-logo"><a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}"></a></div>
+    <button class="nav-menu" aria-label="Abrir menu">
+      ☰
+    </button>
 </nav>
+
+<!-- Aba menu inicial -->
+<div class="nav-overlay"></div>
+
+<!-- Menu lateral -->
+<div class="nav-drawer">
+  <div class="nav-drawer-header">
+    <span>Menu</span>
+    <button class="nav-close">✕</button>
+  </div>
+
+  <a href="{{ url_for('home') }}#inicio">Início</a>
+  <a href="{{ url_for('home') }}#memorias">Memórias</a>
+  <a href="{{ url_for('home') }}#retiro">O Retiro</a>
+  <a href="{{ url_for('home') }}#local">Local</a>
+  <a href="{{ url_for('home') }}#agenda">Agenda</a>
+  <a href="{{ url_for('home') }}#equipe">Equipe</a>
+</div>
 
 <!-- HERO -->
 <section class="hero" id="inicio">
@@ -1073,7 +1237,7 @@
   <div class="memorias-intro reveal">
     <span class="section-tag">Quem somos</span>
     <h2 class="memorias-intro-title">Nosso quadro de <em>memórias</em></h2>
-    <p class="memorias-intro-desc">
+    <p class="retiro-desc">
       Desde 2013, o grupo Yeshua tem sido casa, oração e missão para muitos jovens. Cada
       Desperta deixou marcas — aqui ficam algumas delas, penduradas como num mural de
       recordações.
@@ -1103,7 +1267,7 @@
           <div class="polaroid-ano">2013</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">O começo</span>
-            <span class="polaroid-desperta-tag">Desperta I</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">Nasceu o Desperta — um sonho de despertar jovens para Cristo do jeito que só a juventude parece.</p>
         </div>
@@ -1122,7 +1286,7 @@
           <div class="polaroid-ano">2014</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Raízes</span>
-            <span class="polaroid-desperta-tag">Desperta II</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">A oportunidade de firmar e laços ainda mais profundos e a sustentar a caminhada da fé.</p>
         </div>
@@ -1141,7 +1305,7 @@
           <div class="polaroid-ano">2015</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Crescendo juntos</span>
-            <span class="polaroid-desperta-tag">Desperta III</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">Mais jovens chegam, novos servos se envolvem e a missão ganha força.</p>
         </div>
@@ -1160,7 +1324,7 @@
           <div class="polaroid-ano">2016</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Fogo que arde</span>
-            <span class="polaroid-desperta-tag">Desperta IV</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">Um ano marcado por conversões profundas e histórias bonitas marcadas com Jesus.</p>
         </div>
@@ -1179,7 +1343,7 @@
           <div class="polaroid-ano">2017</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Família Yeshua</span>
-            <span class="polaroid-desperta-tag">Desperta V</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">O grupo se reconhece como família — partilhando vida, oração e missão.</p>
         </div>
@@ -1198,7 +1362,7 @@
           <div class="polaroid-ano">2018</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Sem olhar atrás</span>
-            <span class="polaroid-desperta-tag">Desperta VI</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">Os jovens saem o Desperta para fazer missão, partilha, evangelização e serviço.</p>
         </div>
@@ -1217,7 +1381,7 @@
           <div class="polaroid-ano">2019</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Renovo</span>
-            <span class="polaroid-desperta-tag">Desperta</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">Novas formações, novos dinâmicos, mesmo coração: acolher Cristo para jovens.</p>
         </div>
@@ -1227,13 +1391,16 @@
       <div class="polaroid">
         <div class="pin"></div>
         <div class="polaroid-foto">
-         <span>🖼</span><span>retiro_2020.jpg</span>
+          <div class="polaroid-foto-placeholder">
+            <span>🖼</span>
+            <span>retiro_2020.jpg</span>
+          </div>
         </div>
         <div class="polaroid-body">
           <div class="polaroid-ano">2020</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Mesmo durante, unidos</span>
-            <span class="polaroid-desperta-tag">Desperta</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">A pandemia chegou, mas a fé não parou — amor e orações sustentam o grupo.</p>
         </div>
@@ -1252,7 +1419,7 @@
           <div class="polaroid-ano">2021</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Volta ao encontro</span>
-            <span class="polaroid-desperta-tag">Desperta</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">A presença voltou a todo o nosso presencialmente — pedido por cada abraço.</p>
         </div>
@@ -1271,7 +1438,7 @@
           <div class="polaroid-ano">2022</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Reconstrução</span>
-            <span class="polaroid-desperta-tag">Desperta</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">Superando as dificuldades, novos servos e a reconstrução da melhor comunidade.</p>
         </div>
@@ -1290,7 +1457,7 @@
           <div class="polaroid-ano">2023</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">10 anos de Desperta</span>
-            <span class="polaroid-desperta-tag">Desperta</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">Uma década celebrando o Sinal de Deus na vida de tantos jovens.</p>
         </div>
@@ -1309,7 +1476,7 @@
           <div class="polaroid-ano">2024</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Despertar</span>
-            <span class="polaroid-desperta-tag">Desperta</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">A comunidade se aprofundando numa nova formação para novas missionários.</p>
         </div>
@@ -1328,7 +1495,7 @@
           <div class="polaroid-ano">2025</div>
           <div class="polaroid-tema-row">
             <span class="polaroid-tema">Desperta VI</span>
-            <span class="polaroid-desperta-tag">Desperta VI</span>
+            <span class="polaroid-desperta-tag">Yeshua</span>
           </div>
           <p class="polaroid-desc">Um retiro inesquecível — Deus para estar com vocês. Agora é 2026.</p>
         </div>
@@ -1536,12 +1703,28 @@
 
   reveals.forEach(el => observer.observe(el));
 
+
   // Nav menu toggle (hamburger simples)
-  const menu = document.querySelector('.nav-menu');
-  menu.addEventListener('click', () => {
-    // Você pode expandir aqui com um menu mobile real
-    alert('Menu em construção! Adicione os links desejados.');
+  const menuBtn = document.querySelector('.nav-menu');
+  const drawer = document.querySelector('.nav-drawer');
+  const overlay = document.querySelector('.nav-overlay');
+  const closeBtn = document.querySelector('.nav-close');
+
+  menuBtn.addEventListener('click', () => {
+    drawer.classList.add('active');
+    overlay.classList.add('active');
   });
+
+  closeBtn.addEventListener('click', () => {
+    drawer.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+
+  overlay.addEventListener('click', () => {
+    drawer.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+
 
   // Smooth scroll para âncoras internas
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
