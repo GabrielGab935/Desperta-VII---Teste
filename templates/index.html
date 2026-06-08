@@ -1699,7 +1699,7 @@
         entry.target.classList.add('visible');
       }
     });
-  }, { threshold: 0.5 });
+  }, { threshold: 0.5, rootMargin: '0px 0px -50px 0px'  });
 
   reveals.forEach(el => observer.observe(el));
 
