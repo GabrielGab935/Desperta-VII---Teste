@@ -90,10 +90,99 @@
     }
 
     .nav-menu {
-      font-size: 22px;
-      color: var(--text);
-      cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 22px;
+    cursor: pointer;
     }
+
+  /* ── MENU LATERAL ── */
+
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: 0.3s;
+    z-index: 199;
+  }
+
+  .nav-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .nav-drawer {
+    position: fixed;
+    top: 0;
+    right: -300px;
+
+    width: 280px;
+    height: 100vh;
+
+    background: var(--blue_nav);
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 2rem;
+
+    transition: right 0.3s ease;
+
+    z-index: 200;
+
+    border-left: 1px solid rgba(201,168,76,0.15);
+  }
+
+  .nav-drawer.active {
+    right: 0;
+  }
+
+  .nav-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 2rem;
+  }
+
+  .nav-drawer-header span {
+    color: var(--gold);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .nav-close {
+    background: none;
+    border: none;
+
+    color: white;
+
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+
+  .nav-drawer a {
+    color: var(--text);
+
+    text-decoration: none;
+
+    padding: 1rem 0;
+
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+
+    transition: 0.2s;
+  }
+
+  .nav-drawer a:hover {
+    color: var(--gold);
+    padding-left: 8px;
+  }
 
     /* PÁGINA FORMULÁRIO */
 
@@ -758,14 +847,30 @@
 <body>
 
   <!-- NAV -->
-
   <nav>
-    <div class="nav-logo">
-      <a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}"></a>
-    </div>
+  <div class="nav-logo"><a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}"></a></div>
+    <button class="nav-menu" aria-label="Abrir menu">
+      ☰
+    </button>
+</nav>
 
-    <div class="nav-menu">☰</div>
-  </nav>
+<!-- Aba menu inicial -->
+<div class="nav-overlay"></div>
+
+<!-- Menu lateral -->
+<div class="nav-drawer">
+  <div class="nav-drawer-header">
+    <span>Menu</span>
+    <button class="nav-close">✕</button>
+  </div>
+
+  <a href="{{ url_for('home') }}#inicio">Início</a>
+  <a href="{{ url_for('home') }}#memorias">Memórias</a>
+  <a href="{{ url_for('home') }}#retiro">O Retiro</a>
+  <a href="{{ url_for('home') }}#local">Local</a>
+  <a href="{{ url_for('home') }}#agenda">Agenda</a>
+  <a href="{{ url_for('home') }}#equipe">Equipe</a>
+</div>
 
   <!-- FORMULÁRIO -->
 
@@ -782,7 +887,7 @@
         <span class="insc-tag">Inscrição</span>
 
         <h1 class="insc-title">
-          Formulário do <em>Desperta VII</em>
+          Formulário do <em>VII Desperta</em>
         </h1>
 
       </div>
@@ -1201,6 +1306,27 @@
 
 
 <script>
+
+  // Nav menu toggle (hamburger simples)
+  const menuBtn = document.querySelector('.nav-menu');
+  const drawer = document.querySelector('.nav-drawer');
+  const overlay = document.querySelector('.nav-overlay');
+  const closeBtn = document.querySelector('.nav-close');
+
+  menuBtn.addEventListener('click', () => {
+    drawer.classList.add('active');
+    overlay.classList.add('active');
+  });
+
+  closeBtn.addEventListener('click', () => {
+    drawer.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+
+  overlay.addEventListener('click', () => {
+    drawer.classList.remove('active');
+    overlay.classList.remove('active');
+  });
 
   /* ─────────────────────────────
      MÁSCARA TELEFONE
