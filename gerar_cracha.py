@@ -2,7 +2,6 @@ from PIL import Image, ImageDraw, ImageFont
 import requests
 from io import BytesIO
 import cloudinary.uploader
-import os
 
 def gerar_cracha(nome, link_foto):
 
@@ -25,7 +24,6 @@ def gerar_cracha(nome, link_foto):
     # ==================================================
     # FOTO CIRCULAR
     # ==================================================
-
     diametro = 250
 
     foto = foto.resize(
@@ -50,8 +48,6 @@ def gerar_cracha(nome, link_foto):
     # ==================================================
     # CENTRO DO CÍRCULO DO TEMPLATE
     # ==================================================
-    # AJUSTE FINO AQUI SE NECESSÁRIO
-
     centro_x = 632
     centro_y = 216
 
@@ -67,10 +63,8 @@ def gerar_cracha(nome, link_foto):
     # ==================================================
     # TEXTO
     # ==================================================
-
     draw = ImageDraw.Draw(base)
 
-    # TAMANHO AUTOMÁTICO
     if len(nome) > 30:
         tamanho_fonte = 42
     elif len(nome) > 20:
@@ -78,24 +72,12 @@ def gerar_cracha(nome, link_foto):
     else:
         tamanho_fonte = 68
 
-    # ==========================================
-    # ALTERAR FONTE AQUI
-    # ==========================================
-
     fonte = ImageFont.truetype(
-        "modelos/Cookie-Regular.ttf",
+        "arial.ttf",
         tamanho_fonte
     )
 
-    # ==========================================
-    # ALTERAR COR AQUI
-    # ==========================================
-
     cor_nome = (0, 0, 0)
-
-    # ==========================================
-    # MEDIDAS DO TEXTO
-    # ==========================================
 
     bbox = draw.textbbox(
         (0, 0),
@@ -109,10 +91,8 @@ def gerar_cracha(nome, link_foto):
     # ==================================================
     # FAIXA BRANCA
     # ==================================================
-
     faixa_x = 35
     faixa_y = 930
-
     faixa_largura = 730
     faixa_altura = 120
 
@@ -120,7 +100,6 @@ def gerar_cracha(nome, link_foto):
     centro_faixa_y = faixa_y + (faixa_altura / 2)
 
     x_texto = centro_faixa_x - (largura_texto / 2)
-
     y_texto = centro_faixa_y - (altura_texto / 2) - 15
 
     draw.text(
@@ -131,25 +110,25 @@ def gerar_cracha(nome, link_foto):
     )
 
     # ==================================================
-    # SALVAR TEMPORÁRIO
+    # ✅ SALVAR EM MEMÓRIA (sem tocar no disco)
     # ==================================================
-
-    arquivo = f"{nome}.png"
+    buffer = BytesIO()
 
     base.save(
-        arquivo,
+        buffer,
+        format="PNG",
         quality=100
     )
 
-    # ==================================================
-    # UPLOAD CLOUDINARY
-    # ==================================================
+    buffer.seek(0)
 
+    # ==================================================
+    # UPLOAD CLOUDINARY direto do buffer
+    # ==================================================
     upload = cloudinary.uploader.upload(
-        arquivo,
-        folder="crachas_desperta"
+        buffer,
+        folder="crachas_desperta",
+        resource_type="image"
     )
-
-    os.remove(arquivo)
 
     return upload["secure_url"]
