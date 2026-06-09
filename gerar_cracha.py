@@ -73,7 +73,7 @@ def gerar_cracha(nome, link_foto):
         tamanho_fonte = 68
 
     fonte = ImageFont.truetype(
-        "arial.ttf",
+        "Cookie-Regular.ttf",
         tamanho_fonte
     )
 
