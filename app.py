@@ -1,12 +1,12 @@
 import flask
 import os
-import json
 import gspread
 from google.oauth2.service_account import Credentials
 
 import cloudinary
 import cloudinary.uploader
 
+# IMPORTAR GERADOR DE CRACHÁ
 from gerar_cracha import gerar_cracha
 
 # ══════════════════════════════════════════════════════════════════
@@ -19,6 +19,11 @@ cloudinary.config(
 )
 
 # ══════════════════════════════════════════════════════════════════
+# CONFIGURAÇÕES
+# ══════════════════════════════════════════════════════════════════
+NOME_PLANILHA = "VII Desperta"
+
+# ══════════════════════════════════════════════════════════════════
 # GOOGLE SHEETS
 # ══════════════════════════════════════════════════════════════════
 SCOPES = [
@@ -26,11 +31,14 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-credentials_info = json.loads(os.environ["GOOGLE_CREDENTIALS_JSON"])
-creds = Credentials.from_service_account_info(credentials_info, scopes=SCOPES)
+creds = Credentials.from_service_account_file(
+    "credenciais.json",
+    scopes=SCOPES
+)
 
 cliente_sheet = gspread.authorize(creds)
-planilha = cliente_sheet.open("Desperta VII").sheet1
+
+planilha = cliente_sheet.open(NOME_PLANILHA).sheet1
 
 # ══════════════════════════════════════════════════════════════════
 # FLASK
