@@ -588,6 +588,16 @@
       transform: translateY(-1px);
     }
 
+    .btn-submit.enviando{
+    background: var(--text-muted);
+
+    color: white;
+
+    cursor: not-allowed;
+
+    opacity: .9;
+}
+
     /* SUCESSO */
 
     .insc-sucesso {
@@ -631,6 +641,8 @@
       color: var(--text-muted);
       line-height: 1.8;
     }
+
+
 
     /* EQUIPE */
 
@@ -930,6 +942,7 @@
         type="tel" 
         id="f-tel"
         name="telefone"
+        maxlength="15"
         placeholder="(00) 00000-0000"
         oninput="mascaraTel(this)">
     </div>
@@ -950,9 +963,14 @@
     <label>Data de nascimento *</label>
 
     <input 
-      type="date"
+      type="text"
       id="f-nasc"
-      name="data_nascimento">
+      name="data_nascimento"
+      placeholder="dd/mm/aaaa"
+      maxlength="10"
+      inputmode="numeric"
+      oninput="mascaraData(this)"
+      autocomplete="off">
   </div>
 
 </div>
@@ -1036,6 +1054,7 @@
         id="f-tel-responsavel"
         name="telefone_responsavel"
         placeholder="(00) 00000-0000"
+        maxlength="15"
         oninput="mascaraTel(this)">
 
     </div>
@@ -1262,6 +1281,7 @@
 
 <button 
   type="button"
+  id="btnEnviar"
   class="btn-submit"
   onclick="enviarForm()">
 
@@ -1327,6 +1347,91 @@
     drawer.classList.remove('active');
     overlay.classList.remove('active');
   });
+  
+/* ─────────────────────────────
+     MÁSCARA Data de Nascimento
+  ───────────────────────────── */
+  function mascaraData(input) {
+
+    // Remove tudo que não for número
+    let valor = input.value.replace(/\D/g, '');
+
+    // Limita a 8 números
+    valor = valor.substring(0, 8);
+
+     // Dia
+    if (valor.length >= 2) {
+
+        let dia = parseInt(valor.substring(0,2));
+
+        if (dia > 31)
+            dia = 31;
+
+        valor = dia.toString().padStart(2,"0") + valor.substring(2);
+    }
+
+    // Mês
+    if (valor.length >= 4){
+
+        let mes = parseInt(valor.substring(2,4));
+
+        if (mes > 12)
+            mes = 12;
+
+        valor =
+            valor.substring(0,2) +
+            mes.toString().padStart(2,"0") +
+            valor.substring(4);
+    } 
+
+      // Formatação
+      if(valor.length > 2)
+        valor = valor.replace(/^(\d{2})(\d)/,"$1/$2");
+
+      if(valor.length > 5)
+        valor = valor.replace(/^(\d{2})\/(\d{2})(\d)/,"$1/$2/$3");
+
+      input.value = valor;
+    }
+
+/* ─────────────────────────────
+     Validar Data de Nascimento
+  ───────────────────────────── */
+  function validarData(data){
+
+    const partes = data.split("/");
+
+    if(partes.length !== 3)
+        return false;
+
+    const dia = parseInt(partes[0]);
+
+    const mes = parseInt(partes[1]);
+
+    const ano = parseInt(partes[2]);
+
+    if(ano < 1900 || ano > new Date().getFullYear())
+        return false;
+
+    const dataObj = new Date(ano, mes - 1, dia);
+
+    const hoje = new Date();
+
+      if (dataObj > hoje)
+          return false;
+
+    return (
+
+        dataObj.getFullYear() === ano &&
+
+        dataObj.getMonth() === mes - 1 &&
+
+        dataObj.getDate() === dia
+
+    );
+
+}
+  
 
   /* ─────────────────────────────
      MÁSCARA TELEFONE
@@ -1334,13 +1439,18 @@
 
   function mascaraTel(input) {
 
+    // Remove tudo que não é número
     let valor = input.value.replace(/\D/g, '');
 
-    valor = valor.replace(/^(\d{2})(\d)/g, '($1) $2');
+    // Limita a 11 dígitos
+    valor = valor.substring(0, 11);
+
+    // Formata (XX) XXXXX-XXXX
+    valor = valor.replace(/^(\d{2})(\d)/, '($1) $2');
     valor = valor.replace(/(\d{5})(\d)/, '$1-$2');
 
     input.value = valor;
-  }
+}
 
   /* ─────────────────────────────
      MOSTRAR CAMPOS EXTRAS
@@ -1490,43 +1600,43 @@
       return;
     }
 
-    if (nasc.value === '') {
+    if (!validarData(nasc.value)) {
 
-      nasc.classList.add('erro');
+      nasc.classList.add("erro");
 
-      mostrarErro('Informe sua data de nascimento.');
+      mostrarErro("Informe uma data de nascimento válida.");
 
       return;
     }
 
     if (responsavel.value.trim() === '') {
 
-  responsavel.classList.add('erro');
+      responsavel.classList.add('erro');
 
-  mostrarErro('Informe o nome do responsável.');
+      mostrarErro('Informe o nome do responsável.');
 
-  return;
-}
+      return;
+    }
 
-if (parentesco.value === '') {
+    if (parentesco.value === '') {
 
-  parentesco.classList.add('erro');
+      parentesco.classList.add('erro');
 
-  mostrarErro('Selecione o parentesco do responsável.');
+      mostrarErro('Selecione o parentesco do responsável.');
 
-  return;
-}
+      return;
+    }
 
-if (telResponsavel.value.trim().length < 14) {
+    if (telResponsavel.value.trim().length < 14) {
 
-  telResponsavel.classList.add('erro');
+      telResponsavel.classList.add('erro');
 
-  mostrarErro('Informe o telefone do responsável.');
+      mostrarErro('Informe o telefone do responsável.');
 
-  return;
-}
+      return;
+    }
 
-const retiro = document.querySelector('input[name="retiro_ant"]:checked');
+    const retiro = document.querySelector('input[name="retiro_ant"]:checked');
 
     if (!retiro) {
 
@@ -1535,7 +1645,7 @@ const retiro = document.querySelector('input[name="retiro_ant"]:checked');
       return;
     }
 
-    if (expectativa.value.trim().length < 10) {
+    if (expectativa.value.trim().length < 5) {
 
       expectativa.classList.add('erro');
 
@@ -1569,12 +1679,19 @@ const retiro = document.querySelector('input[name="retiro_ant"]:checked');
       return;
     }
 
+    /* Trava do botão enviar o formulario e alteração de estado */
+    
+    const botao = document.getElementById("btnEnviar");
+
+    botao.innerHTML = "⏳ Enviando...";
+    botao.classList.add("enviando");
+    botao.disabled = true;
+    
     /* SUCESSO */
 
     document.getElementById('form-inscricao').submit();
 
     window.scrollTo({
-      top: 0,
       behavior: 'smooth'
     });
   }
