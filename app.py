@@ -2,6 +2,7 @@ import flask
 import os
 import gspread
 from google.oauth2.service_account import Credentials
+import json
 
 import cloudinary
 import cloudinary.uploader
@@ -12,7 +13,7 @@ from gerar_cracha import gerar_cracha
 # ══════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO CLOUDINARY
 # ══════════════════════════════════════════════════════════════════
-cloudinary.config(
+cloudinary.config(    
     cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
     api_key=os.environ["CLOUDINARY_API_KEY"],
     api_secret=os.environ["CLOUDINARY_API_SECRET"]
@@ -31,14 +32,31 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_file(
-    "credenciais.json",
-    scopes=SCOPES
-)
+def get_planilha():
 
-cliente_sheet = gspread.authorize(creds)
+    # Se existir o arquivo, usa ele (desenvolvimento local)
+    if os.path.exists("credenciais.json"):
 
-planilha = cliente_sheet.open(NOME_PLANILHA).sheet1
+        creds = Credentials.from_service_account_file(
+            "credenciais.json",
+            scopes=SCOPES
+        )
+
+    # Caso contrário, usa a variável da Vercel
+    else:
+
+        creds_json = os.environ["GOOGLE_CREDENTIALS_JSON"]
+
+        creds_dict = json.loads(creds_json)
+
+        creds = Credentials.from_service_account_info(
+            creds_dict,
+            scopes=SCOPES
+        )
+
+    cliente_sheet = gspread.authorize(creds)
+
+    return cliente_sheet.open(NOME_PLANILHA).sheet1
 
 # ══════════════════════════════════════════════════════════════════
 # FLASK
@@ -63,6 +81,8 @@ def formulario():
 
 @app.route("/enviar", methods=["POST"])
 def enviar():
+
+    planilha = get_planilha()
 
     # ══════════════════════════════════════════════════════════════
     # DADOS PESSOAIS
