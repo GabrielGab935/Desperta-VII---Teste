@@ -1,0 +1,1276 @@
+*,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --blue_nav: #0D1528;
+      /*barra de navegação*/
+      --gold: #C9A84C;
+      --gold-light: #E2C97E;
+      --dark: #0d0d0d;
+      --dark-2: #080e1e;
+      /* cor fundo sobre, local e equipe*/
+      --dark-3: #0a1021;
+      /* cor fundo retiro e agenda*/
+      --dark-4: #161c2c;
+      --text: #F0EDE6;
+      --text-muted: #8A8478;
+      --white: #FFFFFF;
+      --green: #22c55e;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--dark);
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      width: 100%;
+      /* Força a largura da visualização */
+
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background: rgba(13, 21, 40, 0.555);
+      backdrop-filter: blur(8px);
+      border-bottom: 0.5px solid rgba(201, 168, 76, 0.15);
+    }
+
+    .nav-logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--dark);
+      letter-spacing: 0.02em;
+    }
+
+    .nav-menu {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    /* ── MENU LATERAL ── */
+
+    .nav-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+
+      opacity: 0;
+      visibility: hidden;
+
+      transition: 0.3s;
+      z-index: 199;
+    }
+
+    .nav-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .nav-drawer {
+      position: fixed;
+      top: 0;
+      right: -300px;
+
+      width: 280px;
+      height: 100vh;
+
+      background: var(--blue_nav);
+
+      display: flex;
+      flex-direction: column;
+
+      padding: 2rem;
+
+      transition: right 0.3s ease;
+
+      z-index: 200;
+
+      border-left: 1px solid rgba(201, 168, 76, 0.15);
+    }
+
+    .nav-drawer.active {
+      right: 0;
+    }
+
+    .nav-drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      margin-bottom: 2rem;
+    }
+
+    .nav-drawer-header span {
+      color: var(--gold);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .nav-close {
+      background: none;
+      border: none;
+
+      color: white;
+
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .nav-drawer a {
+      color: var(--text);
+
+      text-decoration: none;
+
+      padding: 1rem 0;
+
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+      transition: 0.2s;
+    }
+
+    .nav-drawer a:hover {
+      color: var(--gold);
+      padding-left: 8px;
+    }
+
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Vídeo de fundo */
+    .hero-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      opacity: 0.35;
+    }
+
+    /* Overlay escuro sobre o vídeo para o texto ficar legível */
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom,
+          rgba(13, 13, 13, 0.55) 0%,
+          rgba(13, 13, 13, 0.3) 50%,
+          rgba(13, 13, 13, 0.75) 100%);
+      z-index: 1;
+    }
+
+    /* Todo conteúdo do hero fica acima do vídeo */
+    .hero>*:not(.hero-video):not(.hero-overlay) {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201, 168, 76, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .hero-tag {
+      font-size: 15px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(4rem, 18vw, 6.5rem);
+      font-weight: 300;
+      line-height: 0.9;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s forwards;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text);
+      max-width: 300px;
+      margin: 0 auto 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.6s forwards;
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 280px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.8s forwards;
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: var(--dark);
+      border: none;
+      padding: 14px 28px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 15px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 0.5px solid rgba(240, 237, 230, 0.3);
+      padding: 14px 28px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 15px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .scroll-hint {
+      margin-top: 3rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.2s forwards;
+      color: var(--text-muted);
+      font-size: 20px;
+      animation-name: fadeUp, bounce;
+      animation-duration: 0.8s, 1.5s;
+      animation-delay: 1.2s, 2s;
+      animation-fill-mode: forwards, none;
+      animation-iteration-count: 1, infinite;
+    }
+
+    /* ── SECTION BASE ── */
+    section {
+      padding: 5rem 1.5rem;
+    }
+
+    .section-tag {
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 10vw, 3.5rem);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .section-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    /* ── QUADRO DE MEMÓRIAS ── */
+    /* ── QUADRO DE MEMÓRIAS ── */
+    .memorias {
+      background: var(--dark-2);
+      padding: 5rem 1.5rem;
+    }
+
+    .memorias-intro {
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+
+    .memorias-intro .section-tag {
+      text-align: center;
+    }
+
+    .memorias-intro-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 8vw, 2.8rem);
+      font-weight: 300;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .memorias-intro-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .memorias-intro-desc {
+      font-size: 19px;
+      line-height: 1.9;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    /* Parede de cortiça */
+    .cork-board {
+      overflow: visible;
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(201, 168, 76, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(201, 168, 76, 0.03) 0%, transparent 50%),
+        repeating-linear-gradient(0deg,
+          transparent,
+          transparent 3px,
+          rgba(255, 255, 255, 0.01) 3px,
+          rgba(255, 255, 255, 0.01) 4px),
+        repeating-linear-gradient(90deg,
+          transparent,
+          transparent 3px,
+          rgba(255, 255, 255, 0.01) 3px,
+          rgba(255, 255, 255, 0.01) 4px),
+        linear-gradient(145deg, #2a1f0e 0%, #1e1508 30%, #2d2010 60%, #1a1206 100%);
+      border-radius: 12px;
+      padding: 1.5rem 1rem 2rem;
+      border: 2px solid rgba(201, 168, 76, 0.2);
+      box-shadow:
+        inset 0 0 40px rgba(0, 0, 0, 0.5),
+        0 8px 32px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    /* Parafusos nos cantos */
+    .cork-board::before,
+    .cork-board::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #d4a843, #8a6520);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      top: 14px;
+    }
+
+    .cork-board::before {
+      left: 14px;
+    }
+
+    .cork-board::after {
+      right: 14px;
+    }
+
+    .cork-board-inner-corners::before,
+    .cork-board-inner-corners::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #d4a843, #8a6520);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      bottom: 14px;
+    }
+
+    .cork-board-inner-corners::before {
+      left: 14px;
+    }
+
+    .cork-board-inner-corners::after {
+      right: 14px;
+    }
+
+    /* Grid de polaroids */
+    .polaroid-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      padding: 0.5rem;
+    }
+
+    /* Card polaroid */
+    .polaroid {
+      background: #f5f0e8;
+      border-radius: 3px;
+      padding: 8px 8px 36px;
+      box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.5),
+        0 1px 3px rgba(0, 0, 0, 0.3),
+        inset 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+      position: relative;
+      transform-origin: center bottom;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: default;
+    }
+
+    /* Rotações alternadas para parecer pregado na parede */
+    .polaroid:nth-child(3n+1) {
+      transform: rotate(-1.5deg);
+    }
+
+    .polaroid:nth-child(3n+2) {
+      transform: rotate(0.8deg);
+    }
+
+    .polaroid:nth-child(3n) {
+      transform: rotate(-0.5deg);
+    }
+
+    .polaroid:nth-child(4) {
+      transform: rotate(1.2deg);
+    }
+
+    .polaroid:nth-child(7) {
+      transform: rotate(-2deg);
+    }
+
+    .polaroid:nth-child(10) {
+      transform: rotate(1.8deg);
+    }
+
+    .polaroid:hover {
+      transform: rotate(0deg) scale(1.04) translateY(-4px);
+      box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.6),
+        0 4px 8px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+    }
+
+    /* Pino vermelho */
+    .pin {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      z-index: 5;
+    }
+
+    .pin::before {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #ff6b6b, #c0392b);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+      top: 0;
+      left: 1px;
+    }
+
+    .pin::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 8px;
+      background: linear-gradient(to bottom, #888, #555);
+      bottom: -8px;
+      left: 6px;
+      border-radius: 0 0 1px 1px;
+    }
+
+    /* Área da foto dentro do polaroid */
+    .polaroid-foto {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #c8c0b0;
+      position: relative;
+      overflow: visible;
+      border-radius: 1px;
+    }
+
+    /* ✅ IMAGEM: substitua o src abaixo pelo caminho da sua foto
+     Exemplo: src="imagens/retiro_2013.jpg" */
+    .polaroid-foto img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: sepia(0.15) brightness(0.92);
+      transition: filter 0.3s;
+    }
+
+    .polaroid:hover .polaroid-foto img {
+      filter: sepia(0) brightness(1);
+    }
+
+    /* Placeholder quando não há foto */
+    .polaroid-foto-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #bab2a2, #a8a090);
+      gap: 4px;
+    }
+
+    .polaroid-foto-placeholder span:first-child {
+      font-size: 1.4rem;
+      opacity: 0.5;
+    }
+
+    .polaroid-foto-placeholder span:last-child {
+      font-size: 8px;
+      color: rgba(0, 0, 0, 0.35);
+      letter-spacing: 0.05em;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Texto do polaroid (ano, título, desc) */
+    .polaroid-body {
+      padding: 6px 2px 0;
+      text-align: center;
+    }
+
+    .polaroid-ano {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #333;
+      margin-bottom: 1px;
+    }
+
+    .polaroid-tema-row {
+      flex-direction: column;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      margin-bottom: 3px;
+    }
+
+    .polaroid-tema {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.2;
+    }
+
+    .polaroid-desperta-tag {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 6px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #a07830;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .polaroid-desc {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 17px;
+      color: #555;
+      line-height: 1.5;
+      font-weight: 300;
+    }
+
+    /* ── MEMÓRIAS — RESPONSIVO MOBILE ── */
+    @media (max-width: 700px) {
+      .memorias {
+        padding: 3rem 1rem;
+      }
+
+      .memorias-intro-desc {
+        max-width: 100%;
+        font-size: 16px;
+      }
+
+      /* Cork board sem padding excessivo */
+      .cork-board {
+        padding: 1.2rem 0.6rem 1.5rem;
+      }
+
+      /* 1 coluna em telas muito pequenas */
+      .polaroid-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 0.5rem 0.25rem;
+      }
+
+      /* Remove rotações no mobile — evitam corte nas bordas */
+      .polaroid,
+      .polaroid:nth-child(3n+1),
+      .polaroid:nth-child(3n+2),
+      .polaroid:nth-child(3n),
+      .polaroid:nth-child(4),
+      .polaroid:nth-child(7),
+      .polaroid:nth-child(10) {
+        transform: none;
+      }
+
+      /* Textos do polaroid maiores pois há mais espaço vertical */
+      .polaroid-ano {
+        font-size: 14px;
+      }
+
+      .polaroid-tema {
+        font-size: 20px;
+      }
+
+      .polaroid-desc {
+        font-size: 13px;
+      }
+    }
+
+    @media (min-width: 701px) and (max-width: 1024px) {
+
+      /* Tablet: 2 colunas */
+      .polaroid-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+      }
+    }
+
+    /* ── RETIRO Foto ── */
+    /* SECTION AZUL */
+    .foto-retiro-area {
+      width: 100%;
+      padding: 90px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--dark-3);
+      overflow: hidden;
+    }
+
+    /* CAIXA DA FOTO */
+    .foto-glow-box {
+      position: relative;
+      width: 95%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* degrade do brilho da foto*/
+    .foto-glow-box::before {
+      content: "";
+      position: absolute;
+      width: 180%;
+      height: 108%;
+      background:
+        radial-gradient(circle,
+          rgba(199, 151, 8, 0.599) 0%,
+          rgba(255, 215, 100, 0.20) 35%,
+          rgba(255, 215, 100, 0.15) 55%, transparent 72%);
+      filter: blur(20px);
+      z-index: 1;
+    }
+
+    /* Foto */
+    .retiro-photo {
+      width: 100%;
+      border-radius: 20px;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.30);
+    }
+
+    /* PLACEHOLDER */
+    .foto-placeholder {
+      display: none;
+      width: 100%;
+      height: 220px;
+      border-radius: 20px;
+      background: #1a2236;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-style: italic;
+      color: rgba(255, 215, 100, 0.35);
+      letter-spacing: 0.1em;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ── O retiro ── */
+    .retiro {
+      background: var(--dark-3);
+    }
+
+    .retiro-desc {
+      font-size: 19px;
+      line-height: 1.9;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .retiro-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .meta-item {
+      padding: 1rem;
+      background: var(--dark-4);
+      border-radius: 4px;
+      border: 0.5px solid rgba(201, 168, 76, 0.1);
+    }
+
+    .meta-label {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .meta-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    /* ── Onde acontece ── */
+    /* Layout em duas colunas */
+    .local {
+      background: var(--dark-2);
+    }
+
+    .local-container {
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 50px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 20px;
+    }
+
+    .local-content {
+      flex: 1;
+      max-width: 500px;
+    }
+
+    /* Ajuste do Título e Descrição */
+    .section-tag {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--gold);
+      font-size: 12px;
+      display: block;
+      margin-bottom: 15px;
+    }
+
+    .section-title {
+      font-size: 3rem;
+      font-family: 'Cormorant Garamond', serif;
+      color: white;
+    }
+
+    .section-title em {
+      color: var(--gold);
+      font-style: italic;
+    }
+
+    .local-description {
+      margin: 25px 0 40px 0;
+      font-size: 15px;
+      /* Um pouco maior para legibilidade */
+    }
+
+    /* O Card de Informação (Bordas arredondadas e sutis) */
+    .local-card {
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      background: var(--dark-4);
+      display: inline-block;
+      /* Não ocupa a largura toda */
+      width: 100%;
+    }
+
+    .local-card .local-info h3 {
+      color: var(--gold);
+    }
+
+
+    /* O Mapa (Moldura branca e arredondada) */
+    .local-map-wrapper {
+      flex: 1;
+      width: 100%;
+      /* Garante largura total no mobile */
+      height: 450px;
+      /* Aumentamos um pouco para facilitar o toque */
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+      /* Adicionado para controle de camada */
+      z-index: 5;
+      /* Garante que o mapa fique acima de fundos invisíveis */
+    }
+
+    .local-map-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      filter: grayscale(0.2);
+      /* Opcional: deixa o mapa mais sóbrio */
+    }
+
+    .local-map-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border: 0;
+      filter: grayscale(0.2);
+    }
+
+
+    /* Ajuste para Celular - CORRIGIDO */
+    @media (max-width: 900px) {
+      .local-container {
+        display: block;
+        text-align: center;
+        padding: 40px 15px;
+      }
+
+      .local-content {
+        max-width: 100%;
+        margin-bottom: 30px;
+      }
+
+      .local-map-wrapper {
+        width: 100%;
+        height: 350px;
+        margin-top: 20px;
+        border-radius: 12px;
+        position: relative;
+        z-index: 10;
+        pointer-events: auto;
+      }
+
+      .local-map-wrapper iframe {
+        pointer-events: auto;
+      }
+    }
+
+    /* ── AGENDA ── */
+    .agenda {
+      padding: 80px 20px;
+      background-color: #0a111e;
+      /* Fundo escuro profundo */
+      text-align: center;
+    }
+
+    .container-centralizado {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* --- ESTILO DA ESCRITA (HEADER) --- */
+
+    .agenda-header {
+      margin-bottom: 50px;
+    }
+
+    .section-tag {
+      display: block;
+      font-family: 'Inter', sans-serif;
+      color: #c5a66a;
+      /* Dourado */
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 5px;
+      /* Espaçamento entre letras como na imagem */
+      text-transform: uppercase;
+      margin-bottom: 15px;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.5rem;
+      color: #ffffff;
+      font-weight: 400;
+      margin: 0 0 20px 0;
+      line-height: 1;
+    }
+
+    .section-title em {
+      font-style: italic;
+      color: #c5a66a;
+      /* "evento" em dourado */
+    }
+
+    .agenda-description {
+      font-family: 'Inter', sans-serif;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* --- ESTILO DO CARD (IMAGEM) --- */
+
+    .calendar-wrapper {
+      max-width: 550px;
+      /* Largura ideal para o card centralizado */
+      margin: 0 auto;
+      border-radius: 15px;
+      overflow: hidden;
+      /* Sombra suave e espalhada para o efeito de flutuação */
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(197, 166, 106, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      /* Borda quase invisível */
+    }
+
+    .calendar-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      /* Remove espaços vazios na base da imagem */
+    }
+
+    /* ── TÍTULOS DAS SEÇÕES ── */
+
+
+    .section-tag {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 7vw, 3rem);
+      font-weight: 300;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .section-title em {
+      color: var(--gold);
+      font-style: italic;
+    }
+
+    .gold-line {
+      width: 70px;
+      height: 1px;
+      background: rgba(201, 168, 76, 0.4);
+      margin: 0 auto 1.5rem;
+    }
+
+    /* equipe */
+
+    .equipe {
+      padding: 4rem 0;
+      /* O primeiro valor é vertical, o segundo (0) é lateral */
+      background: var(--dark-2);
+      width: 100%;
+      /* Garante que a seção ocupe 100% da largura */
+    }
+
+    .equipe-desc {
+      font-size: 13px;
+      line-height: 1.9;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .equipe-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 1.5rem;
+      /* Adiciona o espaço nas laterais dos botões/cards */
+      width: 100%;
+      /* Garante que o grid use o espaço disponível */
+      box-sizing: border-box;
+    }
+
+    .membro-card {
+      background: var(--dark-3);
+      border: 0.5px solid rgba(201, 168, 76, 0.1);
+      border-radius: 8px;
+      padding: 1.25rem;
+      text-align: center;
+      transition: border-color 0.25s;
+    }
+
+    .membro-card:hover {
+      border-color: rgba(201, 168, 76, 0.4);
+    }
+
+    .membro-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin: 0 auto 0.75rem;
+      overflow: hidden;
+      border: 2px solid rgba(201, 168, 76, 0.3);
+    }
+
+    .membro-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .membro-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .membro-role {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .btn-whatsapp {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      border: 0.5px solid rgba(201, 168, 76, 0.3);
+      padding: 6px 12px;
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+
+    .btn-whatsapp:hover {
+      background: rgba(201, 168, 76, 0.1);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark);
+      border-top: 0.5px solid rgba(201, 168, 76, 0.15);
+      padding: 3rem 1.5rem 2rem;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .footer-logo-circle a img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .footer-logo-text h4 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    .footer-logo-text span {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .footer-desc {
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h5 {
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-section a {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      margin-bottom: 0.4rem;
+      transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+      color: var(--gold);
+    }
+
+    .footer-divider {
+      border: none;
+      border-top: 0.5px solid rgba(201, 168, 76, 0.1);
+      margin: 2rem 0 1.5rem;
+    }
+
+    .footer-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .footer-copy {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .footer-verse {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: rgba(201, 168, 76, 0.6);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(8px);
+      }
+    }
+
+
+    /* ── DIVIDER ── */
+    .gold-line {
+      width: 40px;
+      height: 1px;
+      background: var(--gold);
+      margin-bottom: 1.5rem;
+    }
