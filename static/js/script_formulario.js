@@ -367,3 +367,31 @@
       behavior: 'smooth'
     });
   }
+
+  function copiarPix() {
+
+    const chavePix = "Olá galerinha do Yeshua!";
+
+    const botao = document.getElementById("btnPix");
+
+    navigator.clipboard.writeText(chavePix);
+
+    botao.innerHTML = "✅ Chave PIX copiada!";
+
+    botao.classList.add("copiado");
+
+    botao.disabled = true;
+
+    setTimeout(() => {
+
+        botao.innerHTML = "📋 Copiar chave PIX";
+
+        botao.classList.remove("copiado");
+
+        botao.disabled = false;
+
+    }, 2500);
+
+}
+
+  
