@@ -14,9 +14,9 @@ from gerar_cracha import gerar_cracha
 # CONFIGURAÇÃO CLOUDINARY
 # ══════════════════════════════════════════════════════════════════
 cloudinary.config(    
-    cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
-    api_key=os.environ["CLOUDINARY_API_KEY"],
-    api_secret=os.environ["CLOUDINARY_API_SECRET"]
+    cloud_name="dtniy0neq",
+    api_key="772442582939877",
+    api_secret="2DJVkFR0ESs7bKVyqhupNSXAE9A"
 )
 
 # ══════════════════════════════════════════════════════════════════
@@ -171,15 +171,33 @@ def enviar():
         try:
 
             # UPLOAD DA FOTO
-            resultado = cloudinary.uploader.upload(foto)
-
-            link_foto = resultado["secure_url"]
-
-            # GERAR CRACHÁ AUTOMÁTICO
-            link_cracha = gerar_cracha(
+            # Gera o crachá em memória
+            buffer_cracha = gerar_cracha(
                 nome,
-                link_foto
+                foto
             )
+
+            # Volta o ponteiro da foto
+            foto.seek(0)
+
+            # Upload da foto original
+            resultado_foto = cloudinary.uploader.upload(
+                foto,
+                folder="fotos_participantes"
+            )
+
+            link_foto = resultado_foto["secure_url"]
+
+            # Upload do crachá
+            resultado_cracha = cloudinary.uploader.upload(
+                buffer_cracha,
+                folder="crachas_desperta",
+                resource_type="image"
+            )
+
+            link_cracha = resultado_cracha["secure_url"]
+
+            buffer_cracha.close()
 
         except Exception as e:
 
@@ -191,6 +209,23 @@ def enviar():
     # ══════════════════════════════════════════════════════════════
     # SALVAR NA PLANILHA
     # ══════════════════════════════════════════════════════════════
+
+    print(type(nome), nome)
+    print(type(telefone), telefone)
+    print(type(email), email)
+    print(type(data_nascimento), data_nascimento)
+    print(type(nome_responsavel), nome_responsavel)
+    print(type(grau_parentesco), grau_parentesco)
+    print(type(telefone_responsavel), telefone_responsavel)
+    print(type(retiro_ant), retiro_ant)
+    print(type(expectativa), expectativa)
+    print(type(alergia), alergia)
+    print(type(descricao_alergia), descricao_alergia)
+    print(type(remedio), remedio)
+    print(type(nome_medicamento), nome_medicamento)
+    print(type(link_foto), link_foto)
+    print(type(link_cracha), link_cracha)
+
     planilha.append_row([
 
         nome,
