@@ -1,5 +1,4 @@
-
-  // Nav menu toggle (hamburger simples)
+// Nav menu toggle (hamburger simples)
   const menuBtn = document.querySelector('.nav-menu');
   const drawer = document.querySelector('.nav-drawer');
   const overlay = document.querySelector('.nav-overlay');
@@ -140,10 +139,75 @@
   }
 
   /* ─────────────────────────────
+     COMPRIMIR FOTO (evita erro 413)
+  ───────────────────────────── */
+
+  // Reduz dimensões e qualidade da imagem antes do envio.
+  function comprimirFoto(file, maxWidth = 1600, maxHeight = 1600, quality = 0.75) {
+
+    return new Promise((resolve) => {
+
+      if (!file.type.startsWith('image/')) {
+        resolve(file);
+        return;
+      }
+
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+
+      img.onload = function () {
+
+        URL.revokeObjectURL(url);
+
+        let largura = img.width;
+        let altura = img.height;
+
+        if (largura > maxWidth || altura > maxHeight) {
+          const escala = Math.min(maxWidth / largura, maxHeight / altura);
+          largura = Math.round(largura * escala);
+          altura = Math.round(altura * escala);
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = largura;
+        canvas.height = altura;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, largura, altura);
+
+        canvas.toBlob((blob) => {
+
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+
+          const nomeComprimido = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+
+          const arquivoComprimido = new File([blob], nomeComprimido, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+          });
+
+          resolve(arquivoComprimido);
+
+        }, 'image/jpeg', quality);
+      };
+
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        resolve(file);
+      };
+
+      img.src = url;
+    });
+  }
+
+  /* ─────────────────────────────
      FOTO PREVIEW
   ───────────────────────────── */
 
-  function previewFoto(input) {
+  async function previewFoto(input) {
 
     const file = input.files[0];
 
@@ -154,6 +218,25 @@
     const nome = document.getElementById('foto-nome');
     const uploadPrompt = document.getElementById('upload-prompt');
 
+    const LIMITE_ORIGINAL_MB = 30;
+
+    if (file.size > LIMITE_ORIGINAL_MB * 1024 * 1024) {
+      mostrarErro('A foto selecionada é muito grande. Escolha uma imagem menor.');
+      input.value = '';
+      return;
+    }
+
+    const uploadPromptTextoOriginal = uploadPrompt.innerHTML;
+    uploadPrompt.innerHTML = '<p class="upload-text"><strong>Processando foto...</strong></p>';
+
+    const arquivoComprimido = await comprimirFoto(file);
+
+    uploadPrompt.innerHTML = uploadPromptTextoOriginal;
+
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(arquivoComprimido);
+    input.files = dataTransfer.files;
+
     const reader = new FileReader();
 
     reader.onload = function (e) {
@@ -162,12 +245,12 @@
 
       preview.style.display = 'flex';
 
-      nome.textContent = file.name;
+      nome.textContent = arquivoComprimido.name;
 
       uploadPrompt.style.display = 'none';
     }
 
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(arquivoComprimido);
   }
 
   /* ─────────────────────────────
@@ -351,6 +434,17 @@
       return;
     }
 
+    /* Checagem de segurança: garante que a foto comprimida não passou do limite aceito pelo servidor */
+
+    const LIMITE_ENVIO_MB = 8;
+
+    if (foto.files[0] && foto.files[0].size > LIMITE_ENVIO_MB * 1024 * 1024) {
+
+      mostrarErro('A foto ainda está muito grande mesmo após a compressão. Tente uma foto diferente ou tire um print/captura de tela dela.');
+
+      return;
+    }
+
     /* Trava do botão enviar o formulario e alteração de estado */
     
     const botao = document.getElementById("btnEnviar");
@@ -370,7 +464,11 @@
 
   function copiarPix() {
 
-    const chavePix = "Olá galerinha do Yeshua!";
+/*=====================================================================
+    COPIAR CHAVE PIX
+======================================================================*/
+
+    const chavePix = "Olá galerinha do Yeshua!" //Mensagem a ser copiada (CHAVE PIX)
 
     const botao = document.getElementById("btnPix");
 
@@ -393,5 +491,3 @@
     }, 2500);
 
 }
-
-  
