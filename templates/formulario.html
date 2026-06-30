@@ -11,6 +11,8 @@
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/formulario.css') }}">
+
+  
   
 </head>
 
@@ -437,6 +439,14 @@
 
 <!-- BOTÃO -->
 
+<div class="alerta-final">
+
+        ⚠️ Envie o comprovante para um dos coordenadores.
+        Sua vaga será confirmada somente após 
+        a identificação do pagamento.
+
+    </div>
+
 <button 
   type="button"
   id="btnEnviar"
@@ -456,35 +466,104 @@
 
 <!-- SUCESSO -->
 
+
 {% if sucesso %}
 
 <div class="insc-sucesso" id="insc-sucesso" style="display:flex;">
 
-  <div class="sucesso-icon">✓</div>
+    <div class="sucesso-icon">
+        ✓
+    </div>
 
-  <h3>
-    Inscrição enviada!
-  </h3>
+    <h2>
+        Inscrição recebida com sucesso!
+    </h2>
 
-  <p>
-    Obrigado,
-    <strong>{{ nome }}</strong>!
-    Seus dados foram enviados com sucesso.
-  </p>
-  <a href="{{ url_for('home') }}">
-    <button class="btn-submit">
-      Voltar ao início
-    </button>
-  </a>
+    <p>
+        Obrigado,
+        <strong>{{ nome }}</strong>!
+    </p>
+
+    <p>
+        Recebemos seus dados com sucesso e eles já estão em nosso sistema.
+    </p>
+
+    <div class="pagamento-box">
+
+        <h3>Próximo passo</h3>
+
+        <p>
+            Para garantir sua vaga no
+            <strong>VII Desperta</strong>,
+            é necessário realizar o pagamento da inscrição.
+        </p>
+
+        <hr>
+
+        <p>
+
+            <strong>Valor:</strong><br>
+
+            R$ XX,XX
+
+        </p>
+
+        <p>
+
+            <strong>Chave PIX</strong><br>
+
+            00.000.000/0000-00
+
+        </p>
+
+        <button
+            class="btn-pix"
+            id="btnPix"
+            onclick="copiarPix()">
+
+            📋 Copiar chave PIX
+
+        </button>
+
+        <p class="observacao">
+
+            Após realizar o pagamento,
+            envie o comprovante para um dos coordenadores.
+
+        </p>
+
+    </div>
+
+    <div class="alerta-final">
+
+        ⚠️ Sua inscrição somente será confirmada
+        após a identificação do pagamento.
+
+    </div>
+
+    <a href="{{ url_for('home') }}">
+
+        <button class="btn-submit-home">
+
+            Voltar ao início
+
+        </button>
+
+    <a href="{{ url_for('home') }}#equipe">
+
+        <button class="btn-submit-equipe">
+
+            Equipe de coordenação
+
+        </button>
+
+    </a>
 
 </div>
 
 {% endif %}
 
-
 <script src="{{ url_for('static', filename='js/script_formulario.js') }}"></script>
-
-
 </body>
 
 </html>
