@@ -2,7 +2,6 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 import requests
 from io import BytesIO
 import cloudinary.uploader
-import os
 
 def gerar_cracha(nome, link_foto):
 
@@ -139,25 +138,28 @@ def gerar_cracha(nome, link_foto):
     )
 
     # ==================================================
-    # SALVAR TEMPORÁRIO
-    # ==================================================
+# GERAR IMAGEM EM MEMÓRIA
+# ==================================================
 
-    arquivo = f"{nome}.png"
+buffer = BytesIO()
 
-    base.save(
-        arquivo,
-        quality=100
-    )
+base.save(
+    buffer,
+    format="PNG"
+)
 
-    # ==================================================
-    # UPLOAD CLOUDINARY
-    # ==================================================
+buffer.seek(0)
 
-    upload = cloudinary.uploader.upload(
-        arquivo,
-        folder="crachas_desperta"
-    )
+# ==================================================
+# UPLOAD CLOUDINARY
+# ==================================================
 
-    os.remove(arquivo)
+upload = cloudinary.uploader.upload(
+    buffer,
+    folder="crachas_desperta",
+    resource_type="image"
+)
 
-    return upload["secure_url"]
+buffer.close()
+
+return upload["secure_url"]
