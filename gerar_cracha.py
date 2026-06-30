@@ -130,7 +130,7 @@ def gerar_cracha(nome, link_foto):
 
     y_texto = centro_faixa_y - (altura_texto / 2) - 15
 
-    draw.text(
+       draw.text(
         (x_texto, y_texto),
         nome,
         fill=cor_nome,
@@ -138,28 +138,28 @@ def gerar_cracha(nome, link_foto):
     )
 
     # ==================================================
-# GERAR IMAGEM EM MEMÓRIA
-# ==================================================
+    # GERAR IMAGEM EM MEMÓRIA
+    # ==================================================
 
-buffer = BytesIO()
+    buffer = BytesIO()
 
-base.save(
-    buffer,
-    format="PNG"
-)
+    base.save(
+        buffer,
+        format="PNG"
+    )
 
-buffer.seek(0)
+    buffer.seek(0)
 
-# ==================================================
-# UPLOAD CLOUDINARY
-# ==================================================
+    # ==================================================
+    # UPLOAD CLOUDINARY
+    # ==================================================
 
-upload = cloudinary.uploader.upload(
-    buffer,
-    folder="crachas_desperta",
-    resource_type="image"
-)
+    upload = cloudinary.uploader.upload(
+        buffer,
+        folder="crachas_desperta",
+        resource_type="image"
+    )
 
-buffer.close()
+    buffer.close()
 
-return upload["secure_url"]
+    return upload["secure_url"]
