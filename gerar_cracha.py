@@ -1,18 +1,14 @@
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-import requests
 from io import BytesIO
-import cloudinary.uploader
 
-def gerar_cracha(nome, link_foto):
+def gerar_cracha(nome, foto_file):
 
     # ==================================================
     # BAIXAR FOTO
     # ==================================================
-    response = requests.get(link_foto)
+    foto_file.seek(0)
 
-    foto = Image.open(
-    BytesIO(response.content)
-)
+    foto = Image.open(foto_file)
 
     # Corrige automaticamente a orientação da foto
     foto = ImageOps.exif_transpose(foto)
@@ -32,8 +28,10 @@ def gerar_cracha(nome, link_foto):
 
     diametro = 254
 
-    foto = foto.resize(
-        (diametro, diametro)
+    foto = ImageOps.fit(
+        foto,
+        (diametro, diametro),
+        Image.Resampling.LANCZOS
     )
 
     mascara = Image.new(
@@ -154,12 +152,6 @@ def gerar_cracha(nome, link_foto):
     # UPLOAD CLOUDINARY
     # ==================================================
 
-    upload = cloudinary.uploader.upload(
-        buffer,
-        folder="crachas_desperta",
-        resource_type="image"
-    )
+    buffer.seek(0)
 
-    buffer.close()
-
-    return upload["secure_url"]
+    return buffer
