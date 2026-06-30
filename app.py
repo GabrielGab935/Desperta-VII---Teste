@@ -14,9 +14,9 @@ from gerar_cracha import gerar_cracha
 # CONFIGURAÇÃO CLOUDINARY
 # ══════════════════════════════════════════════════════════════════
 cloudinary.config(    
-    cloud_name="dtniy0neq",
-    api_key="772442582939877",
-    api_secret="2DJVkFR0ESs7bKVyqhupNSXAE9A"
+    cloud_name=["CLOUDINARY_CLOUD_NAME"],
+    api_key=["CLOUDINARY_API_KEY"],
+    api_secret=["CLOUDINARY_API_SECRET"]
 )
 
 # ══════════════════════════════════════════════════════════════════
