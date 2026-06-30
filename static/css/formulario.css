@@ -548,7 +548,7 @@
       border: none;
       border-radius: 16px;
 
-      padding: 16px;
+      padding: 25px;
 
       background: var(--green);
 
@@ -566,10 +566,64 @@
 
       transition: 0.2s;
 
-      margin-top: 2rem;
+      margin-top: 20px;
     }
 
-    .btn-submit:hover {
+    .btn-submit-home {
+      width: 100%;
+
+      border: none;
+      border-radius: 16px;
+
+      padding: 25px 57px;
+
+      background: var(--green);
+
+      color: var(--dark);
+
+      font-family: 'Montserrat', sans-serif;
+
+      font-size: 12px;
+      font-weight: 700;
+
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+
+      cursor: pointer;
+
+      transition: 0.2s;
+
+      margin-top: 5px;
+    }
+
+    .btn-submit-equipe {
+      width: 100%;
+
+      border: none;
+      border-radius: 16px;
+
+      padding: 25px;
+
+      background: var(--green);
+
+      color: var(--dark);
+
+      font-family: 'Montserrat', sans-serif;
+
+      font-size: 12px;
+      font-weight: 700;
+
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+
+      cursor: pointer;
+
+      transition: 0.2s;
+
+      margin-top: auto;
+    }
+
+    .btn-submit:hover, .btn-submit-home:hover, .btn-submit-equipe:hover{
       background: var(--gold-light);
       transform: translateY(-1px);
     }
@@ -628,7 +682,124 @@
       line-height: 1.8;
     }
 
+    /* ALERTA DE PAGAMENTO !!! */
 
+    .pagamento-box{
+
+      width:100%;
+      max-width:650px;
+
+      margin:20px auto;
+
+      padding:35px;
+
+      background:#131d34;
+
+      border:2px solid var(--gold);
+
+      border-radius:22px;
+
+      box-shadow:0 10px 35px rgba(0,0,0,.35);
+
+      text-align:center;
+  
+    }
+
+    .pagamento-box h3{
+
+      color:var(--gold);
+
+      font-size:34px;
+
+      margin-bottom:20px;
+
+      font-family:"Cormorant Garamond", serif;
+    }
+
+    .valor{
+
+      font-size:42px;
+
+      font-weight:bold;
+
+      color:white;
+
+      margin:15px 0;
+    }
+
+    .pix{
+
+      background:#1b2743;
+
+      border:1px solid var(--gold);
+
+      border-radius:12px;
+
+      padding:15px;
+
+      color:white;
+
+      font-size:24px;
+
+      font-weight:600;
+
+      margin:20px 0;
+    }
+
+    .btn-pix{
+
+      background:var(--green);
+
+      color:#0D1528;
+
+      border:none;
+
+      border-radius:12px;
+
+      margin-top: 15px;
+
+      margin-bottom: 15px;
+
+      padding:20px 30px;
+
+      font-weight:bold;
+
+      cursor:pointer;
+
+      transition:.25s;
+    }
+
+    .btn-pix:hover{
+
+      transform:translateY(-2px);
+
+      background:var(--gold-light);
+    }
+
+    .btn-pix.copiado{
+
+    background:var(--gold-light);
+
+    color:black;
+
+}
+
+    .alerta-final{
+
+      padding:30px;
+
+      border-left:5px solid #ffb703;
+
+      background:rgba(255,183,3,.08);
+
+      border-radius:12px;
+
+      color:white;
+
+      font-size:18px;
+    }
+
+    
 
     /* EQUIPE */
 
