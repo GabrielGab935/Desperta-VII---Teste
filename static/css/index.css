@@ -309,7 +309,7 @@
     }
 
     .scroll-hint {
-      margin-top: 3rem;
+      margin-top: 2rem;
       opacity: 0;
       animation: fadeUp 0.8s 1.2s forwards;
       color: var(--text-muted);
@@ -1063,6 +1063,7 @@
       line-height: 1.9;
       color: var(--text-muted);
       margin-bottom: 2rem;
+      text-align: center;
     }
 
     .equipe-grid {
