@@ -130,7 +130,7 @@ def gerar_cracha(nome, link_foto):
 
     y_texto = centro_faixa_y - (altura_texto / 2) - 15
 
-       draw.text(
+    draw.text(
         (x_texto, y_texto),
         nome,
         fill=cor_nome,
