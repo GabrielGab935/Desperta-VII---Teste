@@ -57,7 +57,7 @@
       <a href="#retiro" class="btn-primary">Quero me inscrever</a>
       <a href="#sobre" class="btn-outline">Conhecer o retiro</a>
     </div>
-    <div class="scroll-hint"> Mais informações <br> ↓ </div>
+    <div class="scroll-hint">Mais informações <br> ↓</div>
   </section>
 
   <!-- SOBRE -->
@@ -65,10 +65,11 @@
 
   <section class="memorias" id="memorias">
 
-    <!-- Introdução -->
+    <!-- Introdução Quem somos -->
     <div class="memorias-intro">
       <span class="section-tag">Quem somos</span>
       <h2 class="memorias-intro-title">Nosso quadro de <em>memórias</em></h2>
+      <div class="gold-line"></div>
       <p class="retiro-desc">
         Desde 2013, o grupo Yeshua tem sido casa, oração e missão para muitos jovens. Cada
         Desperta deixou marcas — aqui ficam algumas delas, penduradas como num mural de
@@ -312,7 +313,19 @@
   </section>
 
 
-  <!-- FOTO GRUPO -->
+  <!-- RETIRO -->
+
+  <section class="retiro" id="retiro">
+    <div>
+      <span class="section-tag">O retiro</span>
+      <h2 class="memorias-intro-title">Três dias para <em>despertar</em> a alma</h2>
+      <div class="gold-line"></div>
+      <p class="retiro-desc">Um tempo separado do barulho do mundo, dedicado a momentos de oração, partilha, louvor e
+        formação. Cada edição do Desperta é uma nova oportunidade de dizer sim a Deus e voltar para casa transformado.
+      </p>
+    </div>
+
+     <!-- FOTO GRUPO -->
   <!-- ✅ FOTO DO GRUPO: coloque o arquivo em imagens/foto-grupo.jpg -->
   <section class="foto-retiro-area">
 
@@ -323,17 +336,6 @@
     </div>
 
   </section>
-
-  <!-- RETIRO -->
-  <section class="retiro" id="retiro">
-    <div>
-      <span class="section-tag">O retiro</span>
-      <h2 class="section-title">Três dias para <em>despertar</em> a alma</h2>
-      <div class="gold-line"></div>
-      <p class="retiro-desc">Um tempo separado do barulho do mundo, dedicado a momentos de oração, partilha, louvor e
-        formação. Cada edição do Desperta é uma nova oportunidade de dizer sim a Deus e voltar para casa transformado.
-      </p>
-    </div>
 
     <div class="retiro-meta ">
       <div class="meta-item">
@@ -365,9 +367,10 @@
       <!-- LADO ESQUERDO: TEXTOS -->
       <div class="local-content">
         <span class="section-tag">Onde acontece</span>
-        <h2 class="section-title">Recanto <em>Amor Perfeito</em></h2>
+        <h2 class="memorias-intro-title">Recanto <em>Amor Perfeito</em></h2>
+        <div class="gold-line"></div>
 
-        <p class="local-description">
+        <p class="retiro-desc">
           Um lugar cercado pela natureza, ideal para o silêncio interior, a oração e os encontros que marcam para
           sempre. O retiro acontece num espaço acolhedor, preparado com carinho para receber cada jovem.
         </p>
@@ -397,8 +400,9 @@
       <!-- Cabeçalho -->
       <div class="agenda-header">
         <span class="section-tag">AGENDA</span>
-        <h2 class="section-title">Próximo <em>evento</em></h2>
-        <p class="agenda-description">
+        <h2 class="memorias-intro-title">Próximo <em>evento</em></h2>
+        <div class="gold-line"></div>
+        <p class="retiro-desc">
           Acompanhe abaixo as datas dos nossos encontros e do retiro Desperta VII.<br>
           Reserve o seu lugar e venha viver esse tempo com a gente.
         </p>
@@ -416,9 +420,9 @@
   <section class="equipe" id="equipe">
     <div>
       <span class="section-tag">Equipe</span>
-      <h2 class="section-title">Fale com <em>a coordenação</em></h2>
+      <h2 class="memorias-intro-title">Fale com <em>a coordenação</em></h2>
       <div class="gold-line"></div>
-      <p class="equipe-desc">Tem dúvidas, quer conversar sobre o grupo ou o retiro? Chame um dos coordenadores no
+      <p class="retiro-desc">Tem dúvidas, quer conversar sobre o grupo ou o retiro? Chame um dos coordenadores no
         WhatsApp.</p>
     </div>
 
@@ -503,8 +507,8 @@
     </div>
   </footer>
 
-  <script src="{{ url_for('static', filename='js/script_index.js') }}"></script>
-  
+   <script src="{{ url_for('static', filename='js/script_index.js') }}"></script>
+
 </body>
 
 </html>
