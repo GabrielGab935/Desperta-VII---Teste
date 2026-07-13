@@ -469,6 +469,7 @@
 
 {% if sucesso %}
 
+
 <div class="insc-sucesso" id="insc-sucesso" style="display:flex;">
 
     <div class="sucesso-icon">
@@ -485,85 +486,136 @@
     </p>
 
     <p>
-        Recebemos seus dados com sucesso e eles já estão em nosso sistema.
+        Recebemos sua inscrição com sucesso e ela já foi registrada em nosso sistema.
     </p>
+
+    <p>
+        Agora falta apenas um último passo para confirmar sua participação no
+        <strong>VII Desperta</strong>.
+    </p>
+
+    <!-- STEPS -->
+
+    <div class="sucesso-steps">
+
+        <div class="sucesso-step completo">
+            <div class="sucesso-step-icone">✓</div>
+            <span>Inscrição realizada</span>
+        </div>
+
+        <div class="sucesso-step-linha"></div>
+
+        <div class="sucesso-step pendente">
+            <div class="sucesso-step-icone">💳</div>
+            <span>Realizar pagamento</span>
+        </div>
+
+    </div>
 
     <div class="pagamento-box">
 
-        <h3>Próximo passo</h3>
+        <div class="pagamento-titulo">
+            <span class="pagamento-icone">💳</span>
+            Pagamento da inscrição
+        </div>
 
-        <p>
-            Para garantir sua vaga no
-            <strong>VII Desperta</strong>,
-            é necessário realizar o pagamento da inscrição.
-        </p>
+        <div class="pagamento-grid">
 
-        <hr>
+            <div class="pagamento-campo">
+                <span class="pagamento-label">Valor da inscrição</span>
+                <span class="pagamento-valor">R$ XX,XX</span>
+            </div>
 
-        <p>
+            <div class="pagamento-campo">
+                <span class="pagamento-label">Chave PIX (CNPJ)</span>
+                <span class="pagamento-valor pix">00.000.000/0000-00</span>
+            </div>
 
-            <strong>Valor:</strong><br>
-
-            R$ XX,XX
-
-        </p>
-
-        <p>
-
-            <strong>Chave PIX</strong><br>
-
-            00.000.000/0000-00
-
-        </p>
+        </div>
 
         <button
-            class="btn-pix"
-            id="btnPix"
-            onclick="copiarPix()">
+          type="button"
+          class="btn-pix"
+          id="btnPix"
+          onclick="copiarPix()">
 
-            📋 Copiar chave PIX
+          📋 Copiar chave PIX
 
         </button>
 
-        <p class="observacao">
+        <div class="pagamento-contato">
 
-            Após realizar o pagamento,
-            envie o comprovante para um dos coordenadores.
+            <div class="pagamento-contato-info">
 
-        </p>
+                <div class="pagamento-contato-avatar">
+                    <img src="{{ url_for('static', filename='imagens/coordenador.jpg') }}" alt="Foto do responsável">
+                </div>
+
+                <div class="pagamento-contato-texto">
+                    <span class="pagamento-label">Enviar comprovante para</span>
+                    <strong>Nome do Responsável</strong>
+                    <span class="pagamento-contato-tel">(00) 00000-0000</span>
+                </div>
+
+            </div>
+
+            <a
+                class="btn-whats-comprovante"
+                href="https://wa.me/5500000000000"
+                target="_blank"
+                rel="noopener">
+
+                💬 Chamar no WhatsApp
+
+            </a>
+
+        </div>
 
     </div>
 
     <div class="alerta-final">
 
-        ⚠️ Sua inscrição somente será confirmada
-        após a identificação do pagamento.
+        <div class="alerta-final-titulo">
+            ⚠️ Importante
+        </div>
+
+        <p class="alerta-final-texto">
+            Sua inscrição foi recebida, porém a vaga será confirmada somente após:
+        </p>
+
+        <ul class="alerta-final-lista">
+            <li>realização do pagamento;</li>
+            <li>envio do comprovante para a coordenação;</li>
+            <li>identificação do pagamento pela organização.</li>
+        </ul>
 
     </div>
 
-    <a href="{{ url_for('home') }}">
+    <div class="sucesso-botoes">
 
-        <button class="btn-submit-home">
+        <a href="{{ url_for('home') }}">
+            <button class="btn-submit-home">
+                ← Voltar para a página inicial
+            </button>
+        </a>
 
-            Voltar ao início
+        <a href="{{ url_for('home') }}#equipe">
+            <button class="btn-submit-equipe">
+                Equipe de coordenação
+            </button>
+        </a>
 
-        </button>
-
-    <a href="{{ url_for('home') }}#equipe">
-
-        <button class="btn-submit-equipe">
-
-            Equipe de coordenação
-
-        </button>
-
-    </a>
+    </div>
 
 </div>
 
 {% endif %}
 
+
+
 <script src="{{ url_for('static', filename='js/script_formulario.js') }}"></script>
+
+
 </body>
 
 </html>
