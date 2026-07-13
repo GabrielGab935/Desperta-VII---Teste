@@ -1,11 +1,16 @@
 import flask
 import os
+import re
+import json
+from datetime import datetime
+
 import gspread
 from google.oauth2.service_account import Credentials
-import json
 
 import cloudinary
 import cloudinary.uploader
+
+from flask import jsonify
 
 # IMPORTAR GERADOR DE CRACHÁ
 from gerar_cracha import gerar_cracha
@@ -22,7 +27,11 @@ cloudinary.config(
 # ══════════════════════════════════════════════════════════════════
 # CONFIGURAÇÕES
 # ══════════════════════════════════════════════════════════════════
-NOME_PLANILHA = "VII Desperta"
+NOME_PLANILHA = "VII Desperta"  # Nome da planilha no Google Sheets
+
+# Nome da aba (worksheet) usada pela agenda/calendário dentro da mesma planilha
+NOME_ABA_INSCRICOES = os.environ.get("SHEET_NAME_INSCRICOES", "inscrições")
+NOME_ABA_EVENTOS = os.environ.get("SHEET_NAME_EVENTOS", "eventos")
 
 # ══════════════════════════════════════════════════════════════════
 # GOOGLE SHEETS
@@ -32,7 +41,9 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-def get_planilha():
+
+def get_credenciais():
+    """Carrega as credenciais do Google, seja do arquivo local ou da env var da Vercel."""
 
     # Se existir o arquivo, usa ele (desenvolvimento local)
     if os.path.exists("credenciais.json"):
@@ -54,9 +65,79 @@ def get_planilha():
             scopes=SCOPES
         )
 
+    return creds
+
+
+def get_planilha():
+    """Retorna a primeira aba da planilha (cadastro de participantes)."""
+
+    creds = get_credenciais()
+
     cliente_sheet = gspread.authorize(creds)
 
     return cliente_sheet.open(NOME_PLANILHA).sheet1
+
+
+def get_aba_eventos():
+    """Retorna a aba 'eventos' (agenda/calendário) dentro da mesma planilha."""
+
+    creds = get_credenciais()
+
+    cliente_sheet = gspread.authorize(creds)
+
+    return cliente_sheet.open(NOME_PLANILHA).worksheet(NOME_ABA_EVENTOS)
+
+
+# ══════════════════════════════════════════════════════════════════
+# AGENDA / CALENDÁRIO — HELPERS
+# ══════════════════════════════════════════════════════════════════
+
+def parse_cronograma(raw):
+    """Converte 'Sex 18h|Chegada; Sáb 09h|Palavra' em uma lista de dicts."""
+    if not raw:
+        return []
+    items = []
+    for chunk in raw.split(";"):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        if "|" in chunk:
+            horario, atividade = chunk.split("|", 1)
+        else:
+            horario, atividade = "", chunk
+        items.append({"horario": horario.strip(), "atividade": atividade.strip()})
+    return items
+
+
+def parse_date(raw):
+    """Normaliza datas para AAAA-MM-DD, aceitando alguns formatos comuns."""
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", raw):
+        return raw
+    for fmt in ("%d/%m/%Y", "%d-%m-%Y"):
+        try:
+            return datetime.strptime(raw, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+    return raw  # devolve como veio, para não quebrar — corrija na planilha
+
+
+def row_to_event(row, idx):
+    return {
+        "id": row.get("id") or f"evento-{idx}",
+        "titulo": row.get("titulo", "").strip(),
+        "categoria": row.get("categoria", "").strip(),
+        "cor": row.get("cor", "#c9a869").strip() or "#c9a869",
+        "data_inicio": parse_date(row.get("data_inicio")),
+        "data_fim": parse_date(row.get("data_fim")) or parse_date(row.get("data_inicio")),
+        "horario": row.get("horario", "").strip(),
+        "local": row.get("local", "").strip(),
+        "descricao": row.get("descricao", "").strip(),
+        "cronograma": parse_cronograma(row.get("cronograma", "")),
+    }
+
 
 # ══════════════════════════════════════════════════════════════════
 # FLASK
@@ -64,6 +145,9 @@ def get_planilha():
 app = flask.Flask(__name__)
 
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+
+# Permite que a agenda.html chame /api/events mesmo se estiver em outro domínio
+
 
 # ══════════════════════════════════════════════════════════════════
 # ROTAS
@@ -77,6 +161,35 @@ def home():
 @app.route("/formulario")
 def formulario():
     return flask.render_template("formulario.html")
+
+
+@app.route("/agenda")
+def agenda():
+    return flask.render_template("agenda.html")
+
+
+@app.route("/api/events")
+def api_events():
+    try:
+        creds = get_credenciais()
+        cliente_sheet = gspread.authorize(creds)
+        
+        todas = cliente_sheet.openall()
+        nomes = [p.title for p in todas]
+        
+        sheet = get_aba_eventos()
+        rows = sheet.get_all_records()
+        
+        events = [
+            row_to_event(row, i)
+            for i, row in enumerate(rows)
+            if row.get("titulo") and row.get("data_inicio")
+        ]
+        return flask.jsonify(events)
+
+    except Exception as exc:
+        print(f"[ERRO AGENDA] {exc}")
+        return flask.jsonify({"error": str(exc)}), 500
 
 
 @app.route("/enviar", methods=["POST"])
