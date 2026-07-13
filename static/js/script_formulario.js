@@ -121,7 +121,7 @@
     valor = valor.replace(/(\d{5})(\d)/, '$1-$2');
 
     input.value = valor;
-}
+  } 
 
   /* ─────────────────────────────
      MOSTRAR CAMPOS EXTRAS
@@ -464,30 +464,26 @@
 
   function copiarPix() {
 
-/*=====================================================================
-    COPIAR CHAVE PIX
-======================================================================*/
-
-    const chavePix = "Olá galerinha do Yeshua!" //Mensagem a ser copiada (CHAVE PIX)
-
+    const chavePix = "SUA_CHAVE_PIX";
     const botao = document.getElementById("btnPix");
 
-    navigator.clipboard.writeText(chavePix);
+    navigator.clipboard.writeText(chavePix)
+        .then(() => {
 
-    botao.innerHTML = "✅ Chave PIX copiada!";
+            botao.innerHTML = "✅ Chave PIX copiada!";
+            botao.classList.add("copiado");
+            botao.disabled = true;
 
-    botao.classList.add("copiado");
+            setTimeout(() => {
+                botao.innerHTML = "📋 Copiar chave PIX";
+                botao.classList.remove("copiado");
+                botao.disabled = false;
+            }, 2500);
 
-    botao.disabled = true;
+        })
+        .catch((err) => {
+            console.error(err);
+            alert("Não foi possível copiar a chave PIX.");
+        });
 
-    setTimeout(() => {
-
-        botao.innerHTML = "📋 Copiar chave PIX";
-
-        botao.classList.remove("copiado");
-
-        botao.disabled = false;
-
-    }, 2500);
-
-}
+  }
