@@ -464,7 +464,7 @@
 
   function copiarPix() {
 
-    const chavePix = "SUA_CHAVE_PIX";
+    const chavePix = "Olá Galerinha do YESHUA!!!";
     const botao = document.getElementById("btnPix");
 
     navigator.clipboard.writeText(chavePix)
