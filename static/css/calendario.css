@@ -1,0 +1,531 @@
+/* As variáveis de cor (--navy-deep, --gold, --cream, --line, etc.)
+   já são declaradas em :root no index.css, que é carregado antes
+   deste arquivo — por isso não são redeclaradas aqui. */
+
+.agenda {
+  max-width: none;
+  margin: 0 auto;
+  padding: var(--section-pad-y, 64px) var(--section-pad-x, 24px);
+}
+
+/* ---------- EYEBROW ---------- */
+.eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: clamp(2.5rem, 6vw, 56px);
+}
+
+.eyebrow-row .line {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.eyebrow-row .label {
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  font-style: italic;
+  font-family: 'EB Garamond', serif;
+  white-space: nowrap;
+}
+
+/* ---------- HERO DO CALENDÁRIO ---------- */
+.calender {
+  display: grid;
+  grid-template-columns: auto 1px 1fr;
+  gap: clamp(20px, 4vw, 36px);
+  align-items: center;
+  padding-bottom: 40px;
+}
+
+.hero-dates {
+  white-space: nowrap;
+}
+
+.hero-range {
+  font-style: italic;
+  font-size: clamp(44px, 7vw, 72px);
+  color: var(--gold-soft);
+  line-height: 1;
+  margin: 0;
+}
+
+.hero-month {
+  margin-top: 14px;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+
+.hero-divider {
+  align-self: stretch;
+  width: 1px;
+  background: var(--line);
+}
+
+/* Título "Próximos encontros" dentro da agenda.
+   Renomeado de .hero-title para .agenda-hero-title: o nome antigo
+   colidia com a classe .hero-title da seção Hero (o texto "Desperta"),
+   e só funcionava por sorte de ordem de carregamento dos arquivos CSS. */
+.agenda-hero-title {
+  font-style: italic;
+  font-size: clamp(20px, 2.4vw, 26px);
+  color: var(--gold-soft);
+  margin: 0 0 10px 0;
+}
+
+.hero-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-soft);
+  font-weight: 300;
+  margin: 0;
+  max-width: 38ch;
+}
+
+.divider-full {
+  height: 1px;
+  background: var(--line);
+  margin-bottom: 40px;
+}
+
+/* ---------- CALENDÁRIO ---------- */
+.cal-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cal-month {
+  font-style: italic;
+  font-size: clamp(24px, 3vw, 30px);
+  color: var(--gold-soft);
+  margin: 0;
+}
+
+.cal-year {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--text-faint);
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cal-nav-btn {
+  background: rgba(239, 232, 216, 0.06);
+  border: 1px solid var(--line);
+  color: var(--gold-soft);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .2s ease, transform .15s ease;
+}
+
+.cal-nav-btn:hover {
+  background: rgba(201, 168, 105, 0.2);
+  transform: scale(1.05);
+}
+
+.cal-nav-btn:disabled {
+  opacity: .25;
+  cursor: default;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px 6px;
+}
+
+.cal-weekday {
+  font-size: 9.5px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  text-align: center;
+  padding-bottom: 14px;
+}
+
+.cal-day {
+  position: relative;
+  aspect-ratio: 1/0.72;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(12px, 2vw, 15px);
+  color: var(--text-soft);
+  border-radius: 3px;
+}
+
+
+.cal-day.empty {
+  visibility: hidden;
+}
+
+/* Hoje sem evento — dourado */
+.cal-day.today {
+  box-shadow: inset 0 0 0 2px var(--gold-soft);
+  border-radius: 6px;
+  color: var(--gold-soft);
+}
+
+.cal-day.event {
+  cursor: pointer;
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.75);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.cal-day.today::before {
+  content: 'hoje';
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  opacity: .8;
+}
+
+/* Hoje com evento — branco */
+.cal-day.event.today {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85) !important;
+  color: var(--ink);
+}
+
+.cal-day.event.today::before {
+  color: rgb(2, 2, 2) !important;
+  opacity: 1 !important;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.cal-day.event:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.5);
+}
+
+.cal-day.event:focus-visible {
+  outline: 2px solid var(--gold-soft);
+  outline-offset: 2px;
+}
+
+.cal-day.event .dot {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.cal-day.event.today {
+  color: var(--ink);
+}
+
+.cal-day.event.today::before {
+  color: rgba(42, 38, 32, 0.6);
+}
+
+.cal-day.event.today {
+  box-shadow: inset 0 0 0 2px var(--navy-deep);
+}
+
+/* ---------- LEGENDA ---------- */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(239, 232, 216, 0.08);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.legend-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legend-hint {
+  font-size: 9.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  opacity: .7;
+}
+
+.cal-empty-msg {
+  text-align: center;
+  padding: 30px 0;
+  font-size: 13px;
+  color: var(--text-faint);
+  font-style: italic;
+  font-family: 'EB Garamond', serif;
+}
+
+/* ---------- MODAL ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 13, 22, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5vh 5vw;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .35s ease, background .35s ease, visibility .35s;
+  z-index: 200;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  background: rgba(6, 13, 22, 0.82);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #ffffff;
+  color: var(--ink);
+  border-radius: 6px;
+  padding: clamp(22px, 5vw, 34px) clamp(18px, 4vw, 30px);
+  position: relative;
+  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6);
+  transform: translateY(14px) scale(.97);
+  transition: transform .35s cubic-bezier(.2, .7, .3, 1);
+}
+
+.modal-overlay.open .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-close {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(42, 38, 32, 0.15);
+  background: rgba(42, 38, 32, 0.05);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+
+.modal-close:hover {
+  background: rgba(42, 38, 32, 0.12);
+  transform: rotate(90deg);
+}
+
+.modal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #000000;
+  margin-bottom: 14px;
+}
+
+.modal-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.modal-title {
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 26px;
+  margin: 0 0 8px 0;
+}
+
+.modal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 12px;
+  color: #000000;
+  margin-bottom: 18px;
+}
+
+.modal-desc {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #4a453a;
+  margin: 0 0 22px 0;
+}
+
+.modal-schedule-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #000000;
+  margin-bottom: 10px;
+}
+
+.modal-schedule {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid rgba(42, 38, 32, 0.15);
+}
+
+.modal-schedule li {
+  position: relative;
+  padding: 0 0 16px 20px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.modal-schedule li::before {
+  content: '';
+  position: absolute;
+  left: -4.5px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.modal-schedule li:last-child {
+  padding-bottom: 0;
+}
+
+.schedule-time {
+  display: block;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.schedule-activity {
+  color: #6b6455;
+}
+
+/* ============================================================
+   BREAKPOINTS — mesmo sistema do index.css: 1400/1200/992/768/576/420
+============================================================ */
+
+/* ---- 992: tablets — o hero do calendário já fica meio apertado ---- */
+@media (max-width: 992px) {
+  .calender {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .hero-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .hero-dates {
+    white-space: normal;
+  }
+}
+
+/* ---- 768: celulares grandes ---- */
+@media (max-width: 768px) {
+  .cal-day {
+    font-size: 13px;
+  }
+
+  .legend {
+    gap: 14px;
+  }
+
+  .modal-card {
+    max-width: 90vw;
+  }
+}
+
+/* ---- 576: celulares ---- */
+@media (max-width: 576px) {
+  .eyebrow-row {
+    gap: 12px;
+  }
+
+  .cal-head {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .cal-nav {
+    gap: 10px;
+  }
+
+  .legend {
+    gap: 10px 16px;
+  }
+}
+
+/* ---- 420: celulares pequenos ---- */
+@media (max-width: 420px) {
+  .hero-range {
+    font-size: clamp(36px, 12vw, 44px);
+  }
+
+  .cal-grid {
+    gap: 3px 4px;
+  }
+
+  .cal-day {
+    font-size: 11px;
+  }
+
+  .cal-weekday {
+    font-size: 8px;
+    padding-bottom: 8px;
+  }
+
+  .modal-card {
+    padding: 20px 16px;
+  }
+
+  .modal-title {
+    font-size: 22px;
+  }
+}
