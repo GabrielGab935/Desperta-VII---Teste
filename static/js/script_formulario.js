@@ -143,63 +143,107 @@
   ───────────────────────────── */
 
   // Reduz dimensões e qualidade da imagem antes do envio.
+  // Nunca rejeita: em qualquer falha (ex.: foto em HEIC/HEIF, que o
+  // navegador não consegue abrir em <img>/<canvas>), devolve o arquivo original
+  // para que o envio nunca fique travado por causa da compressão.
   function comprimirFoto(file, maxWidth = 1600, maxHeight = 1600, quality = 0.75) {
 
     return new Promise((resolve) => {
 
-      if (!file.type.startsWith('image/')) {
+      const nomeMinusculo = (file.name || '').toLowerCase();
+      const pareceHeic = nomeMinusculo.endsWith('.heic') || nomeMinusculo.endsWith('.heif') ||
+                          file.type === 'image/heic' || file.type === 'image/heif';
+
+      if (!file.type.startsWith('image/') || pareceHeic) {
+        // HEIC/HEIF: o navegador não decodifica esse formato em <img>,
+        // então nem tentamos comprimir — seguimos com o arquivo original.
+        if (pareceHeic) {
+          console.warn('[comprimirFoto] Foto em HEIC/HEIF detectada, pulando compressão no navegador.');
+        }
         resolve(file);
         return;
       }
 
-      const img = new Image();
-      const url = URL.createObjectURL(file);
+      let resolvido = false;
+      const resolverUmaVez = (arquivo) => {
+        if (resolvido) return;
+        resolvido = true;
+        resolve(arquivo);
+      };
 
-      img.onload = function () {
+      // Timeout de segurança: se nada acontecer em 8s (imagem corrompida,
+      // navegador travado, etc.), não deixamos o usuário preso na tela de "Processando...".
+      const timeoutId = setTimeout(() => {
+        console.warn('[comprimirFoto] Timeout ao processar imagem, usando arquivo original.');
+        resolverUmaVez(file);
+      }, 8000);
 
-        URL.revokeObjectURL(url);
+      try {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
 
-        let largura = img.width;
-        let altura = img.height;
+        img.onload = function () {
+          try {
+            URL.revokeObjectURL(url);
 
-        if (largura > maxWidth || altura > maxHeight) {
-          const escala = Math.min(maxWidth / largura, maxHeight / altura);
-          largura = Math.round(largura * escala);
-          altura = Math.round(altura * escala);
-        }
+            let largura = img.width;
+            let altura = img.height;
 
-        const canvas = document.createElement('canvas');
-        canvas.width = largura;
-        canvas.height = altura;
+            if (largura > maxWidth || altura > maxHeight) {
+              const escala = Math.min(maxWidth / largura, maxHeight / altura);
+              largura = Math.round(largura * escala);
+              altura = Math.round(altura * escala);
+            }
 
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, largura, altura);
+            const canvas = document.createElement('canvas');
+            canvas.width = largura;
+            canvas.height = altura;
 
-        canvas.toBlob((blob) => {
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, largura, altura);
 
-          if (!blob) {
-            resolve(file);
-            return;
+            canvas.toBlob((blob) => {
+
+              clearTimeout(timeoutId);
+
+              if (!blob) {
+                console.warn('[comprimirFoto] canvas.toBlob retornou vazio, usando arquivo original.');
+                resolverUmaVez(file);
+                return;
+              }
+
+              const nomeComprimido = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+
+              const arquivoComprimido = new File([blob], nomeComprimido, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              });
+
+              resolverUmaVez(arquivoComprimido);
+
+            }, 'image/jpeg', quality);
+
+          } catch (erroInterno) {
+            console.error('[comprimirFoto] Erro ao desenhar/comprimir imagem:', erroInterno);
+            clearTimeout(timeoutId);
+            resolverUmaVez(file);
           }
+        };
 
-          const nomeComprimido = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+        img.onerror = function () {
+          console.error('[comprimirFoto] Erro ao carregar imagem (formato não suportado pelo navegador?)');
+          URL.revokeObjectURL(url);
+          clearTimeout(timeoutId);
+          resolverUmaVez(file);
+        };
 
-          const arquivoComprimido = new File([blob], nomeComprimido, {
-            type: 'image/jpeg',
-            lastModified: Date.now()
-          });
+        img.src = url;
 
-          resolve(arquivoComprimido);
-
-        }, 'image/jpeg', quality);
-      };
-
-      img.onerror = function () {
-        URL.revokeObjectURL(url);
-        resolve(file);
-      };
-
-      img.src = url;
+      } catch (erroExterno) {
+        console.error('[comprimirFoto] Erro inesperado:', erroExterno);
+        clearTimeout(timeoutId);
+        resolverUmaVez(file);
+      }
     });
   }
 
@@ -207,15 +251,40 @@
      FOTO PREVIEW
   ───────────────────────────── */
 
+  function mostrarPreview(arquivo) {
+
+    const preview = document.getElementById('foto-preview');
+    const img = document.getElementById('foto-img');
+    const nome = document.getElementById('foto-nome');
+    const uploadPrompt = document.getElementById('upload-prompt');
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      img.src = e.target.result;
+      preview.style.display = 'flex';
+      nome.textContent = arquivo.name;
+      uploadPrompt.style.display = 'none';
+    };
+
+    reader.onerror = function () {
+      console.error('[mostrarPreview] Falha ao ler o arquivo para gerar a prévia.');
+      // Mesmo sem conseguir mostrar a miniatura (ex.: formato HEIC não suportado
+      // pelo navegador), o arquivo continua selecionado e pode ser enviado normalmente.
+      preview.style.display = 'flex';
+      nome.textContent = arquivo.name;
+      uploadPrompt.style.display = 'none';
+    };
+
+    reader.readAsDataURL(arquivo);
+  }
+
   async function previewFoto(input) {
 
     const file = input.files[0];
 
     if (!file) return;
 
-    const preview = document.getElementById('foto-preview');
-    const img = document.getElementById('foto-img');
-    const nome = document.getElementById('foto-nome');
     const uploadPrompt = document.getElementById('upload-prompt');
 
     const LIMITE_ORIGINAL_MB = 30;
@@ -226,31 +295,35 @@
       return;
     }
 
+    // Mostra a prévia imediatamente com o arquivo original — assim a prévia
+    // nunca depende do sucesso da compressão feita logo abaixo.
+    mostrarPreview(file);
+
     const uploadPromptTextoOriginal = uploadPrompt.innerHTML;
     uploadPrompt.innerHTML = '<p class="upload-text"><strong>Processando foto...</strong></p>';
 
-    const arquivoComprimido = await comprimirFoto(file);
+    try {
+      const arquivoComprimido = await comprimirFoto(file);
 
-    uploadPrompt.innerHTML = uploadPromptTextoOriginal;
-
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(arquivoComprimido);
-    input.files = dataTransfer.files;
-
-    const reader = new FileReader();
-
-    reader.onload = function (e) {
-
-      img.src = e.target.result;
-
-      preview.style.display = 'flex';
-
-      nome.textContent = arquivoComprimido.name;
-
-      uploadPrompt.style.display = 'none';
+      // Só tenta substituir o arquivo do input se realmente foi comprimido
+      // (arquivo diferente do original) e o navegador suporta DataTransfer.
+      if (arquivoComprimido && arquivoComprimido !== file && typeof DataTransfer !== 'undefined') {
+        try {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(arquivoComprimido);
+          input.files = dataTransfer.files;
+          mostrarPreview(arquivoComprimido);
+        } catch (erroDataTransfer) {
+          console.error('[previewFoto] Não foi possível substituir o arquivo comprimido, mantendo o original:', erroDataTransfer);
+          // input mantém o arquivo original selecionado — envio continua funcionando.
+        }
+      }
+    } catch (erroCompressao) {
+      console.error('[previewFoto] Erro inesperado na compressão, mantendo o arquivo original:', erroCompressao);
+      // Arquivo original já está no input e a prévia já foi mostrada acima.
+    } finally {
+      uploadPrompt.innerHTML = uploadPromptTextoOriginal;
     }
-
-    reader.readAsDataURL(arquivoComprimido);
   }
 
   /* ─────────────────────────────
@@ -464,7 +537,8 @@
 
   function copiarPix() {
 
-    const chavePix = "Olá Galerinha do YESHUA!!!";
+    const chavePix = "XXXXXXXXXXXXXXXX"; // Subistituir pela chave pix de quer for receber as inscrições
+    
     const botao = document.getElementById("btnPix");
 
     navigator.clipboard.writeText(chavePix)
