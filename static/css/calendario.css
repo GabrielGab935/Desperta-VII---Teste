@@ -3,6 +3,10 @@
    deste arquivo — por isso não são redeclaradas aqui. */
 
 .agenda {
+  background-color: var(--dark-3);
+}
+
+.agenda {
   max-width: none;
   margin: 0 auto;
   padding: var(--section-pad-y, 64px) var(--section-pad-x, 24px);
@@ -72,7 +76,6 @@
    colidia com a classe .hero-title da seção Hero (o texto "Desperta"),
    e só funcionava por sorte de ordem de carregamento dos arquivos CSS. */
 .agenda-hero-title {
-  font-style: italic;
   font-size: clamp(20px, 2.4vw, 26px);
   color: var(--gold-soft);
   margin: 0 0 10px 0;
