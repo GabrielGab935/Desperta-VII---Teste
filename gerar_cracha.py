@@ -1,7 +1,10 @@
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from io import BytesIO
-from pillow_heif import register_heif_opener
 
+# Garante que o Pillow também consiga abrir HEIC/HEIF (fotos de iPhone)
+# caso esta função seja chamada diretamente com o arquivo cru, sem passar
+# pela normalização feita em app.py.
+from pillow_heif import register_heif_opener
 register_heif_opener()
 
 def gerar_cracha(nome, foto_file):
