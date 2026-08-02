@@ -5,11 +5,35 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Formulário de Inscrição — Desperta VII</title>
+  <title>Formulário de Inscrição — VII Desperta </title>
 
   <link
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
+
+  <!-- Apple -->
+  <link rel="apple-touch-icon" sizes="180x180"
+        href="{{ url_for('static', filename='imagens/favicon/apple-touch-icon.png') }}">
+
+  <!-- SVG -->
+  <link rel="icon" type="image/svg+xml"
+        href="{{ url_for('static', filename='imagens/favicon/favicon.svg') }}">
+
+  <!-- PNG -->
+  <link rel="icon" type="image/png" sizes="32x32"
+        href="{{ url_for('static', filename='imagens/favicon/favicon-32x32.png') }}">
+
+  <link rel="icon" type="image/png" sizes="16x16"
+        href="{{ url_for('static', filename='imagens/favicon/favicon-16x16.png') }}">
+
+  <!-- ICO -->
+  <link rel="shortcut icon"
+        href="{{ url_for('static', filename='imagens/favicon/favicon.ico') }}">
+
+  <!-- Manifest -->
+  <link rel="manifest"
+        href="{{ url_for('static', filename='imagens/favicon/site.webmanifest') }}">
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/formulario.css') }}">
 
   
@@ -63,6 +87,12 @@
         </h1>
 
       </div>
+
+      {% if erro %}
+      <div class="insc-erro-servidor" style="background:#fdecea; border:1px solid #f5c2c0; color:#8a2c27; padding:16px 20px; border-radius:8px; margin-bottom:24px; font-family:'Montserrat', sans-serif; font-size:0.95rem;">
+        ⚠️ {{ erro }}
+      </div>
+      {% endif %}
 
 <form 
   id="form-inscricao"
