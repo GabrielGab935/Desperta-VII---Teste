@@ -3,6 +3,7 @@ import os
 import re
 import json
 from datetime import datetime
+from io import BytesIO
 
 import gspread
 from google.oauth2.service_account import Credentials
@@ -11,6 +12,12 @@ import cloudinary
 import cloudinary.uploader
 
 from flask import jsonify
+
+from PIL import Image, ImageOps
+
+# Registra o suporte a HEIC/HEIF (fotos de iPhone) no Pillow
+from pillow_heif import register_heif_opener
+register_heif_opener()
 
 # IMPORTAR GERADOR DE CRACHÁ
 from gerar_cracha import gerar_cracha
@@ -124,6 +131,54 @@ def parse_date(raw):
     return raw  # devolve como veio, para não quebrar — corrija na planilha
 
 
+# ══════════════════════════════════════════════════════════════════
+# NORMALIZAÇÃO DA FOTO ENVIADA
+# ══════════════════════════════════════════════════════════════════
+
+def normalizar_foto(foto_file, max_dimensao=1600, qualidade=85):
+    """
+    Converte a foto enviada pelo formulário (que pode vir em HEIC/HEIF do
+    iPhone, WEBP, PNG, etc.) para um JPEG padrão, já com a orientação EXIF
+    corrigida, e redimensiona se estiver maior que o necessário.
+
+    O redimensionamento é feito aqui no servidor como uma segurança extra:
+    a compressão do lado do navegador (JS) pode ser pulada (ex.: fotos
+    HEIC, que o navegador não consegue abrir em canvas) ou falhar por
+    qualquer outro motivo, então o backend garante que a imagem final
+    nunca chega gigante — tanto pro upload no Cloudinary quanto pra
+    geração do crachá.
+
+    Isso é feito ANTES de qualquer outra coisa, para que tanto a geração do
+    crachá quanto o upload da foto original no Cloudinary usem sempre o
+    mesmo arquivo, num formato e tamanho previsíveis.
+
+    Retorna um BytesIO pronto para ser lido (posição já no início).
+    """
+
+    foto_file.seek(0)
+
+    imagem = Image.open(foto_file)
+
+    # Corrige a orientação (fotos de celular vêm com metadado de rotação)
+    imagem = ImageOps.exif_transpose(imagem)
+
+    imagem = imagem.convert("RGB")
+
+    # Redimensiona mantendo a proporção, só se a foto for maior que o limite
+    largura, altura = imagem.size
+
+    if largura > max_dimensao or altura > max_dimensao:
+        imagem.thumbnail((max_dimensao, max_dimensao), Image.Resampling.LANCZOS)
+
+    buffer = BytesIO()
+
+    imagem.save(buffer, format="JPEG", quality=qualidade, optimize=True)
+
+    buffer.seek(0)
+
+    return buffer
+
+
 def row_to_event(row, idx):
     return {
         "id": row.get("id") or f"evento-{idx}",
@@ -144,14 +199,29 @@ def row_to_event(row, idx):
 # ══════════════════════════════════════════════════════════════════
 app = flask.Flask(__name__)
 
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024
 
 # Permite que a agenda.html chame /api/events mesmo se estiver em outro domínio
 
 
+from werkzeug.exceptions import RequestEntityTooLarge
+
 # ══════════════════════════════════════════════════════════════════
 # ROTAS
 # ══════════════════════════════════════════════════════════════════
+
+@app.errorhandler(RequestEntityTooLarge)
+def erro_arquivo_grande(e):
+    """
+    Se o arquivo enviado (geralmente a foto) ultrapassar o MAX_CONTENT_LENGTH,
+    mostra uma mensagem amigável no próprio formulário em vez da tela de
+    erro genérica do servidor.
+    """
+    return flask.render_template(
+        "formulario.html",
+        erro="A foto enviada é muito grande. Tente novamente com uma foto menor, "
+             "ou tire um print/captura de tela dela antes de enviar."
+    ), 413
 
 @app.route("/")
 def home():
@@ -283,25 +353,35 @@ def enviar():
 
         try:
 
-            # UPLOAD DA FOTO
-            # Gera o crachá em memória
+            # ══════════════════════════════════════════════════════
+            # 1) NORMALIZA A FOTO PRIMEIRO (HEIC/HEIF/PNG/WEBP → JPEG)
+            # ══════════════════════════════════════════════════════
+            foto_normalizada = normalizar_foto(foto)
+
+            # ══════════════════════════════════════════════════════
+            # 2) GERA O CRACHÁ A PARTIR DA FOTO JÁ NORMALIZADA
+            # ══════════════════════════════════════════════════════
+            foto_normalizada.seek(0)
             buffer_cracha = gerar_cracha(
                 nome,
-                foto
+                foto_normalizada
             )
 
-            # Volta o ponteiro da foto
-            foto.seek(0)
-
-            # Upload da foto original
+            # ══════════════════════════════════════════════════════
+            # 3) UPLOAD DA FOTO ORIGINAL (já normalizada) NO CLOUDINARY
+            # ══════════════════════════════════════════════════════
+            foto_normalizada.seek(0)
             resultado_foto = cloudinary.uploader.upload(
-                foto,
-                folder="fotos_participantes"
+                foto_normalizada,
+                folder="fotos_participantes",
+                format="jpg"
             )
 
             link_foto = resultado_foto["secure_url"]
 
-            # Upload do crachá
+            # ══════════════════════════════════════════════════════
+            # 4) UPLOAD DO CRACHÁ GERADO NO CLOUDINARY
+            # ══════════════════════════════════════════════════════
             resultado_cracha = cloudinary.uploader.upload(
                 buffer_cracha,
                 folder="crachas_desperta",
@@ -311,6 +391,7 @@ def enviar():
             link_cracha = resultado_cracha["secure_url"]
 
             buffer_cracha.close()
+            foto_normalizada.close()
 
         except Exception as e:
 
