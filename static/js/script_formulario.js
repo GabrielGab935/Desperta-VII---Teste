@@ -540,10 +540,58 @@ async function mostrarPreview(arquivo) {
   /*
    * Formatos que o navegador decodifica nativamente
    * (JPEG, PNG, WEBP...) — prévia normal via ObjectURL.
+   *
+   * Correção de MIME type: imagens salvas/reencaminhadas
+   * pelo WhatsApp (ou por certos apps de compartilhamento
+   * no Android) às vezes chegam com o "type" do arquivo
+   * vazio ou genérico (ex.: "application/octet-stream"),
+   * mesmo sendo um JPEG/PNG válido nos bytes. O Chrome é
+   * rígido: se o Blob usado no ObjectURL não declarar um
+   * tipo image/*, ele recusa a decodificação na <img> —
+   * outros navegadores costumam ser mais tolerantes.
+   * Corrigimos isso reconstruindo o Blob com o tipo
+   * inferido pela extensão do nome do arquivo, só para
+   * fins de exibição (o arquivo original enviado ao
+   * servidor continua intacto).
    */
 
+  const mimeDeclarado = arquivo.type || '';
+
+  let arquivoParaPreview = arquivo;
+
+  if (!mimeDeclarado.startsWith('image/')) {
+
+    const mimePorExtensao =
+      nomeMinusculo.endsWith('.jpg') ||
+      nomeMinusculo.endsWith('.jpeg')
+        ? 'image/jpeg'
+      : nomeMinusculo.endsWith('.png')
+        ? 'image/png'
+      : nomeMinusculo.endsWith('.webp')
+        ? 'image/webp'
+      : nomeMinusculo.endsWith('.gif')
+        ? 'image/gif'
+      : nomeMinusculo.endsWith('.bmp')
+        ? 'image/bmp'
+        : '';
+
+    if (mimePorExtensao) {
+
+      console.warn(
+        '[mostrarPreview] MIME type ausente/incorreto ' +
+        '("' + mimeDeclarado + '"); usando "' +
+        mimePorExtensao + '" (inferido pela extensão) ' +
+        'só para a prévia.'
+      );
+
+      arquivoParaPreview =
+        new Blob([arquivo], { type: mimePorExtensao });
+    }
+  }
+
+
   const objectUrl =
-    URL.createObjectURL(arquivo);
+    URL.createObjectURL(arquivoParaPreview);
 
 
   img.dataset.objectUrl =
