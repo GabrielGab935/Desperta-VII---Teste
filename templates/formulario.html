@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Formulário de Inscrição — VII Desperta </title>
+  <title>Formulário de Inscrição — Desperta VII</title>
 
   <link
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600;700&display=swap"
@@ -170,13 +170,13 @@
 <div class="form-section">
 
   <span class="form-section-title">
-    Responsável
+    Responsável ou contato de emergência
   </span>
 
   <div class="form-field">
 
     <label>
-      Nome do responsável *
+      Nome do responsável ou contato de emergência*
     </label>
 
     <input
@@ -236,7 +236,7 @@
     <div class="form-field">
 
       <label>
-        Telefone do responsável *
+        Telefone do responsável ou contato de emergência*
       </label>
 
       <input
@@ -415,6 +415,40 @@
   <span class="form-section-title">
     Foto
   </span>
+
+  <div class="form-field">
+
+    <label>
+      Autoriza o uso da imagem 
+      <br>
+      (OBS: A foto será utilizada para fins de identificação e divulgação) *
+    </label>
+
+    <div class="radio-group">
+
+      <div class="radio-opt">
+        <input 
+          type="radio" 
+          id="img_sim" 
+          name="direito_de_imag"
+          value="sim">
+
+        <label for="img_sim">✓ Sim</label>
+      </div>
+
+      <div class="radio-opt">
+        <input 
+          type="radio" 
+          id="img_nao" 
+          name="direito_de_imag"
+          value="nao">
+
+        <label for="img_nao">✗ Não</label>
+      </div>
+
+    </div>
+
+  </div>
 
   <div class="upload-area">
 
@@ -643,6 +677,8 @@
 
 
 
+<!-- Converte HEIC/HEIF (fotos de iPhone) para JPEG só para gerar a prévia no navegador -->
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 <script src="{{ url_for('static', filename='js/script_formulario.js') }}"></script>
 
 
