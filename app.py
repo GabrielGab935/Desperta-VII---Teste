@@ -11,8 +11,6 @@ from google.oauth2.service_account import Credentials
 import cloudinary
 import cloudinary.uploader
 
-from flask import jsonify
-
 from PIL import Image, ImageOps
 
 # Registra o suporte a HEIC/HEIF (fotos de iPhone) no Pillow
@@ -179,6 +177,58 @@ def normalizar_foto(foto_file, max_dimensao=1600, qualidade=85):
     return buffer
 
 
+# ══════════════════════════════════════════════════════════════════
+# VALIDAÇÃO DO FORMULÁRIO DE INSCRIÇÃO
+# ══════════════════════════════════════════════════════════════════
+
+# Campos de texto/seleção obrigatórios: (nome_no_form, rótulo amigável)
+CAMPOS_OBRIGATORIOS = [
+    ("nome", "Nome completo"),
+    ("telefone", "Telefone"),
+    ("email", "E-mail"),
+    ("data_nascimento", "Data de nascimento"),
+    ("nome_responsavel", "Nome do responsável"),
+    ("grau_parentesco", "Grau de parentesco"),
+    ("telefone_responsavel", "Telefone do responsável"),
+    ("retiro_ant", "Se já participou de algum retiro"),
+    ("expectativa", "Expectativa sobre o retiro"),
+    ("alergia", "Se possui alergia alimentar"),
+    ("remedio", "Se utiliza algum medicamento"),
+    ("direito_de_imag", "Autorização de uso de imagem"),
+]
+
+EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def validar_formulario(form):
+    """
+    Valida os campos obrigatórios no servidor (não confiar apenas no JS
+    do navegador). Retorna uma lista de mensagens de erro; lista vazia
+    significa que passou na validação.
+    """
+
+    erros = []
+
+    for campo, rotulo in CAMPOS_OBRIGATORIOS:
+        valor = (form.get(campo) or "").strip()
+        if not valor:
+            erros.append(f"O campo \"{rotulo}\" é obrigatório.")
+
+    email = (form.get("email") or "").strip()
+    if email and not EMAIL_REGEX.match(email):
+        erros.append("Informe um e-mail válido.")
+
+    # Campos "extras" condicionais: se marcou "sim", a descrição não pode
+    # ficar vazia.
+    if (form.get("alergia") or "").strip() == "sim" and not (form.get("descricao_alergia") or "").strip():
+        erros.append("Descreva sua alergia alimentar.")
+
+    if (form.get("remedio") or "").strip() == "sim" and not (form.get("nome_medicamento") or "").strip():
+        erros.append("Informe o(s) medicamento(s) que utiliza.")
+
+    return erros
+
+
 def row_to_event(row, idx):
     return {
         "id": row.get("id") or f"evento-{idx}",
@@ -200,9 +250,6 @@ def row_to_event(row, idx):
 app = flask.Flask(__name__)
 
 app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024
-
-# Permite que a agenda.html chame /api/events mesmo se estiver em outro domínio
-
 
 from werkzeug.exceptions import RequestEntityTooLarge
 
@@ -243,10 +290,7 @@ def api_events():
     try:
         creds = get_credenciais()
         cliente_sheet = gspread.authorize(creds)
-        
-        todas = cliente_sheet.openall()
-        nomes = [p.title for p in todas]
-        
+
         sheet = get_aba_eventos()
         rows = sheet.get_all_records()
         
@@ -265,7 +309,28 @@ def api_events():
 @app.route("/enviar", methods=["POST"])
 def enviar():
 
-    planilha = get_planilha()
+    # ══════════════════════════════════════════════════════════════
+    # VALIDAÇÃO SERVER-SIDE
+    # (o JS do formulário já valida no navegador, mas nunca confiamos
+    # só nisso: se o JS falhar ou for pulado, o servidor barra aqui)
+    # ══════════════════════════════════════════════════════════════
+    erros = validar_formulario(flask.request.form)
+
+    if erros:
+        return flask.render_template(
+            "formulario.html",
+            erro=" ".join(erros)
+        ), 400
+
+    try:
+        planilha = get_planilha()
+    except Exception as exc:
+        print(f"[ERRO PLANILHA] {exc}")
+        return flask.render_template(
+            "formulario.html",
+            erro="Não foi possível conectar ao sistema de inscrições agora. "
+                 "Tente novamente em alguns instantes."
+        ), 500
 
     # ══════════════════════════════════════════════════════════════
     # DADOS PESSOAIS
@@ -347,6 +412,11 @@ def enviar():
     link_foto = ""
     link_cracha = ""
 
+    direito_de_imag = flask.request.form.get(
+        "direito_de_imag",
+        ""
+    ).strip()
+
     foto = flask.request.files.get("foto_participante")
 
     if foto and foto.filename:
@@ -397,28 +467,22 @@ def enviar():
 
             print(f"[ERRO CLOUDINARY] {e}")
 
-            link_foto = f"Erro: {e}"
-            link_cracha = f"Erro: {e}"
+            # Não grava "Erro: ..." como se fosse um link válido na
+            # planilha. A inscrição é interrompida e o usuário é avisado,
+            # em vez de seguir em frente com dados incompletos/errados.
+            return flask.render_template(
+                "formulario.html",
+                erro="Não foi possível processar sua foto agora. "
+                     "Tente novamente com outra foto ou tente novamente "
+                     "em alguns instantes."
+            ), 500
 
     # ══════════════════════════════════════════════════════════════
     # SALVAR NA PLANILHA
     # ══════════════════════════════════════════════════════════════
-
-    print(type(nome), nome)
-    print(type(telefone), telefone)
-    print(type(email), email)
-    print(type(data_nascimento), data_nascimento)
-    print(type(nome_responsavel), nome_responsavel)
-    print(type(grau_parentesco), grau_parentesco)
-    print(type(telefone_responsavel), telefone_responsavel)
-    print(type(retiro_ant), retiro_ant)
-    print(type(expectativa), expectativa)
-    print(type(alergia), alergia)
-    print(type(descricao_alergia), descricao_alergia)
-    print(type(remedio), remedio)
-    print(type(nome_medicamento), nome_medicamento)
-    print(type(link_foto), link_foto)
-    print(type(link_cracha), link_cracha)
+    # (removidos os prints de depuração com dados pessoais dos
+    # inscritos — nome, telefone, alergias, medicamentos etc. não
+    # devem ir para o log do servidor em produção)
 
     planilha.append_row([
 
@@ -440,6 +504,7 @@ def enviar():
         remedio,
         nome_medicamento,
 
+        direito_de_imag,
         link_foto,
         link_cracha
 
