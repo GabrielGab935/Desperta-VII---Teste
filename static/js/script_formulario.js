@@ -139,8 +139,6 @@
     }
   }
 
-
-
 /* ─────────────────────────────────────────────
    COMPRIMIR FOTO
    Reduz dimensões e qualidade antes do envio.
@@ -414,7 +412,46 @@ function comprimirFoto(
    Usa ObjectURL em vez de FileReader.
 ───────────────────────────────────────────── */
 
-function mostrarPreview(arquivo) {
+function mostrarPreviewIndisponivel(arquivo) {
+
+  /*
+   * Fallback quando a imagem não pode ser
+   * decodificada pelo navegador (ex.: HEIC sem
+   * suporte, ou conversão que falhou). Em vez de
+   * deixar o <img> quebrado com o texto alt
+   * aparecendo, mostramos um cartão simples com
+   * o nome do arquivo — o envio continua normal.
+   */
+
+  const preview =
+    document.getElementById('foto-preview');
+
+  const img =
+    document.getElementById('foto-img');
+
+  const nome =
+    document.getElementById('foto-nome');
+
+  const uploadPrompt =
+    document.getElementById('upload-prompt');
+
+
+  img.removeAttribute('src');
+
+  img.style.display = 'none';
+
+  preview.style.display = 'flex';
+
+  nome.textContent =
+    arquivo.name +
+    ' (prévia indisponível neste navegador — ' +
+    'o arquivo será enviado normalmente)';
+
+  uploadPrompt.style.display = 'none';
+}
+
+
+async function mostrarPreview(arquivo) {
 
   const preview =
     document.getElementById('foto-preview');
@@ -445,14 +482,78 @@ function mostrarPreview(arquivo) {
     delete img.dataset.objectUrl;
   }
 
+  /* Garante que a <img> volte a aparecer, caso a
+     prévia anterior tenha caído no fallback. */
+  img.style.display = '';
+
+
+  const nomeMinusculo =
+    (arquivo.name || '').toLowerCase();
+
+  const pareceHeic =
+    nomeMinusculo.endsWith('.heic') ||
+    nomeMinusculo.endsWith('.heif') ||
+    arquivo.type === 'image/heic' ||
+    arquivo.type === 'image/heif';
+
+
+  /*
+   * A maioria dos navegadores (Chrome/Firefox no
+   * Android, e vários no iOS) não sabe decodificar
+   * HEIC/HEIF numa <img>. Convertemos para JPEG só
+   * para exibir a prévia — o arquivo original
+   * continua sendo o que é enviado ao servidor.
+   */
+
+  let arquivoParaPreview = arquivo;
+
+  if (pareceHeic) {
+
+    if (typeof heic2any === 'undefined') {
+
+      console.warn(
+        '[mostrarPreview] heic2any não carregou; ' +
+        'exibindo fallback.'
+      );
+
+      mostrarPreviewIndisponivel(arquivo);
+      return;
+    }
+
+    try {
+
+      const convertido = await heic2any({
+        blob: arquivo,
+        toType: 'image/jpeg',
+        quality: 0.7
+      });
+
+      arquivoParaPreview =
+        Array.isArray(convertido)
+          ? convertido[0]
+          : convertido;
+
+    } catch (erroHeic) {
+
+      console.warn(
+        '[mostrarPreview] Falha ao converter HEIC ' +
+        'para prévia:',
+        erroHeic
+      );
+
+      mostrarPreviewIndisponivel(arquivo);
+      return;
+    }
+  }
+
 
   /*
    * Cria uma referência temporária
-   * ao arquivo.
+   * ao arquivo (já convertido, se era HEIC).
    */
 
   const objectUrl =
-    URL.createObjectURL(arquivo);
+    URL.createObjectURL(arquivoParaPreview);
 
 
   img.dataset.objectUrl =
@@ -488,6 +589,7 @@ function mostrarPreview(arquivo) {
       'mostrar a prévia.'
     );
 
+    mostrarPreviewIndisponivel(arquivo);
   };
 }
 
@@ -567,10 +669,11 @@ async function previewFoto(input) {
 
 
   /*
-   * Mostra a prévia imediatamente.
+   * Mostra a prévia (converte HEIC/HEIF em JPEG
+   * antes de exibir, quando necessário).
    */
 
-  mostrarPreview(file);
+  await mostrarPreview(file);
 
 
   const uploadPromptTextoOriginal =
@@ -916,16 +1019,13 @@ async function previewFoto(input) {
     }
 
 /* ─────────────────────────────
-   FOTO
-───────────────────────────── */
-    /* ─────────────────────────────
    AUTORIZAÇÃO DE IMAGEM
 ───────────────────────────── */
 
-const direitoImagem =
-  document.querySelector(
-    'input[name="direito_de_imag"]:checked'
-  );
+  const direitoImagem =
+    document.querySelector(
+      'input[name="direito_de_imag"]:checked'
+    );
 
   if (!direitoImagem) {
 
@@ -934,7 +1034,11 @@ const direitoImagem =
     );
 
     return;
-  }  
+  }
+
+/* ─────────────────────────────
+   FOTO
+───────────────────────────── */
 
   if (fotoProcessando) {
 
