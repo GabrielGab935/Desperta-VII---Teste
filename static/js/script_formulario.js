@@ -139,6 +139,8 @@
     }
   }
 
+
+
 /* ─────────────────────────────────────────────
    COMPRIMIR FOTO
    Reduz dimensões e qualidade antes do envio.
@@ -916,6 +918,23 @@ async function previewFoto(input) {
 /* ─────────────────────────────
    FOTO
 ───────────────────────────── */
+    /* ─────────────────────────────
+   AUTORIZAÇÃO DE IMAGEM
+───────────────────────────── */
+
+const direitoImagem =
+  document.querySelector(
+    'input[name="direito_de_imag"]:checked'
+  );
+
+  if (!direitoImagem) {
+
+    mostrarErro(
+      'Informe se você autoriza o uso da imagem.'
+    );
+
+    return;
+  }  
 
   if (fotoProcessando) {
 
