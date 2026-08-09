@@ -412,15 +412,34 @@ function comprimirFoto(
    Usa ObjectURL em vez de FileReader.
 ───────────────────────────────────────────── */
 
-function mostrarPreviewIndisponivel(arquivo) {
+function formatarTamanho(bytes) {
+
+  if (!bytes && bytes !== 0) return '';
+
+  const mb = bytes / 1024 / 1024;
+
+  if (mb >= 1) return mb.toFixed(1) + ' MB';
+
+  return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+}
+
+
+function mostrarPreviewSemImagem(arquivo, motivo) {
 
   /*
-   * Fallback quando a imagem não pode ser
-   * decodificada pelo navegador (ex.: HEIC sem
-   * suporte, ou conversão que falhou). Em vez de
-   * deixar o <img> quebrado com o texto alt
-   * aparecendo, mostramos um cartão simples com
-   * o nome do arquivo — o envio continua normal.
+   * Usado quando não tentamos (ou não conseguimos)
+   * decodificar a imagem no navegador para gerar uma
+   * prévia visual — hoje isso é o caso de todo arquivo
+   * HEIC/HEIF (fotos de iPhone), já que decodificar HEIC
+   * via WebAssembly no navegador se mostrou instável em
+   * celulares (trava/falha de forma imprevisível,
+   * principalmente em Android com menos memória).
+   *
+   * Em vez de arriscar uma prévia quebrada, mostramos um
+   * cartão simples confirmando a seleção do arquivo. O
+   * arquivo original é enviado normalmente e a conversão
+   * de verdade acontece no servidor (pillow-heif), que é
+   * um ambiente confiável e sem essas limitações.
    */
 
   const preview =
@@ -443,9 +462,15 @@ function mostrarPreviewIndisponivel(arquivo) {
   preview.style.display = 'flex';
 
   nome.textContent =
-    arquivo.name +
-    ' (prévia indisponível neste navegador — ' +
-    'o arquivo será enviado normalmente)';
+    '📎 ' + arquivo.name +
+    (formatarTamanho(arquivo.size)
+      ? ' (' + formatarTamanho(arquivo.size) + ')'
+      : '') +
+    ' — foto selecionada' +
+    (motivo === 'erro'
+      ? ', prévia indisponível neste navegador'
+      : '') +
+    '.';
 
   uploadPrompt.style.display = 'none';
 }
@@ -483,7 +508,7 @@ async function mostrarPreview(arquivo) {
   }
 
   /* Garante que a <img> volte a aparecer, caso a
-     prévia anterior tenha caído no fallback. */
+     prévia anterior tenha caído no cartão sem imagem. */
   img.style.display = '';
 
 
@@ -498,62 +523,27 @@ async function mostrarPreview(arquivo) {
 
 
   /*
-   * A maioria dos navegadores (Chrome/Firefox no
-   * Android, e vários no iOS) não sabe decodificar
-   * HEIC/HEIF numa <img>. Convertemos para JPEG só
-   * para exibir a prévia — o arquivo original
-   * continua sendo o que é enviado ao servidor.
+   * HEIC/HEIF: não tentamos mais decodificar no
+   * navegador (heic2any + WebAssembly se mostrou
+   * instável em celulares — funcionava numa foto e
+   * falhava em outra, sem padrão previsível). Mostramos
+   * direto o cartão de confirmação.
    */
-
-  let arquivoParaPreview = arquivo;
 
   if (pareceHeic) {
 
-    if (typeof heic2any === 'undefined') {
-
-      console.warn(
-        '[mostrarPreview] heic2any não carregou; ' +
-        'exibindo fallback.'
-      );
-
-      mostrarPreviewIndisponivel(arquivo);
-      return;
-    }
-
-    try {
-
-      const convertido = await heic2any({
-        blob: arquivo,
-        toType: 'image/jpeg',
-        quality: 0.7
-      });
-
-      arquivoParaPreview =
-        Array.isArray(convertido)
-          ? convertido[0]
-          : convertido;
-
-    } catch (erroHeic) {
-
-      console.warn(
-        '[mostrarPreview] Falha ao converter HEIC ' +
-        'para prévia:',
-        erroHeic
-      );
-
-      mostrarPreviewIndisponivel(arquivo);
-      return;
-    }
+    mostrarPreviewSemImagem(arquivo);
+    return;
   }
 
 
   /*
-   * Cria uma referência temporária
-   * ao arquivo (já convertido, se era HEIC).
+   * Formatos que o navegador decodifica nativamente
+   * (JPEG, PNG, WEBP...) — prévia normal via ObjectURL.
    */
 
   const objectUrl =
-    URL.createObjectURL(arquivoParaPreview);
+    URL.createObjectURL(arquivo);
 
 
   img.dataset.objectUrl =
@@ -589,7 +579,7 @@ async function mostrarPreview(arquivo) {
       'mostrar a prévia.'
     );
 
-    mostrarPreviewIndisponivel(arquivo);
+    mostrarPreviewSemImagem(arquivo, 'erro');
   };
 }
 
