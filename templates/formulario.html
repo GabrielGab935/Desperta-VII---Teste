@@ -418,37 +418,27 @@
 
   <div class="form-field">
 
-    <label>
-      Autoriza o uso da imagem 
-      <br>
-      (OBS: A foto será utilizada para fins de identificação e divulgação) *
-    </label>
+    <div class="checkbox-opt">
 
-    <div class="radio-group">
+        <input
+            type="checkbox"
+            id="direito_de_imag"
+            name="direito_de_imag"
+            value="sim"
+            required
+        >
 
-      <div class="radio-opt">
-        <input 
-          type="radio" 
-          id="img_sim" 
-          name="direito_de_imag"
-          value="sim">
+        <label for="direito_de_imag">
+            AUTORIZO O USO DA MINHA IMAGEM.
 
-        <label for="img_sim">✓ Sim</label>
-      </div>
-
-      <div class="radio-opt">
-        <input 
-          type="radio" 
-          id="img_nao" 
-          name="direito_de_imag"
-          value="nao">
-
-        <label for="img_nao">✗ Não</label>
-      </div>
+            <span>
+                (OBS: A foto será utilizada para fins de identificação e divulgação)
+            </span>
+        </label>
 
     </div>
 
-  </div>
+</div>
 
   <div class="upload-area">
 
