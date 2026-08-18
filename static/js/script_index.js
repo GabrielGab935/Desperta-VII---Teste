@@ -50,37 +50,37 @@
   const spreads = [
     {
       left:[
-        {year:'2013', title:'O início', desc:'Nasce o despertar', img:'../static/imagens/yeshua2013.jpg'},
-        {year:'2014', title:'Raízes', desc:'A comunidade se forma', img:'../static/imagens/yeshua2014.jpg'}
+        {year:'2013', title:'Onde tudo começou', desc:' Entre violão, amizades e muita vontade de evangelizar, os primeiros passos do Grupo', img:'../static/imagens/yeshua2013.jpg'},
+        {year:'2014', title:'Crescendo Juntos', desc:'O Yeshua já começava a reunir mais jovens.', img:'../static/imagens/yeshua2014.jpg'}
       ],
       right:[
-        {year:'2015', title:'Crescendo', desc:'Novos amigos, mais louvor', img:'../static/imagens/yeshua2015.jpg'},
-        {year:'2016', title:'Fogo que arde', desc:'Encontros inesquecíveis', img:'../static/imagens/yeshua2016.jpg'}
+        {year:'2015', title:'Evoluindo na fé', desc:'Yeshua já reunia muitos jovens dispostos a viver a alegria do Evangelho.', img:'../static/imagens/yeshua2015.jpg'},
+        {year:'2016', title:' Unidos em um Só Propósito', desc:'Yeshua vivia um tempo de crescimento e fortalecimento.', img:'../static/imagens/yeshua2016.jpg'}
       ]
     },
     {
       left:[
-        {year:'2017', title:'Novos horizontes', desc:'Missões e desafios', img:'../static/imagens/yeshua2017.jpg'},
-        {year:'2018', title:'Juntos à distância', desc:'Fé em tempos difíceis', img:'../static/imagens/yeshua2018.jpg'}
+        {year:'2017', title:'Celebrando a Caminhada', desc:'Cada jovem presente ajudava a tornar o grupo um lugar de acolhida, fé e transformação.', img:'../static/imagens/yeshua2017.jpg'},
+        {year:'2018', title:'Juntos à distância', desc:'Mais do que apenas um encontro de jovens, foi uma verdadeira família reunida pelo mesmo propósito.', img:'../static/imagens/yeshua2018.jpg'}
       ],
       right:[
         {year:'2019', title:'Reencontro', desc:'A alegria de voltar', img:'../static/imagens/yeshua2019.jpg'},
-        {year:'2020', title:'Celebração', desc:'10 anos de história', img:'../static/imagens/yeshua2020.jpg'}
+        {year:'2020', title:' Um Tempo de Oração e Esperança', desc:'Mesmo em um ano desafiador, a fé continuou nos reunindo em momentos de oração e reflexão.', img:'../static/imagens/yeshua2020.jpg'}
       ]
     },
     {
       left:[
-        {year:'2021', title:'Novos horizontes', desc:'Missões e desafios', img:'../static/imagens/yeshua2021.jpg'},
-        {year:'2022', title:'Juntos à distância', desc:'Fé em tempos difíceis', img:'../static/imagens/yeshua2022.jpg'}
+        {year:'2021', title:'O Reencontro da Esperança', desc:'após um período de desafios e distância, marcou o reencontro de muitos jovens com alegria no coração.', img:'../static/imagens/yeshua2021.jpg'},
+        {year:'2022', title:' Um Retiro', desc:'depois de tantos desafios, chegou o momento de viver dias intensos de encontro com Deus.', img:'../static/imagens/yeshua2022.jpg'}
       ],
       right:[
-        {year:'2023', title:'Reencontro', desc:'A alegria de voltar', img:'../static/imagens/yeshua2023.jpg'},
-        {year:'2024', title:'Celebração', desc:'10 anos de história', img:'../static/imagens/yeshua2024.jpg'}
+        {year:'2023', title:'Nossa História Continua', desc:'Foi um momento de união, alegria e fé, onde cada jovem fez parte de uma história que continua crescendo a cada ano.', img:'../static/imagens/yeshua2023.jpg'},
+        {year:'2024', title:' Chamados Para Algo Maior', desc:'Foi mais do que um retiro, foram almas unidas a Jesus mesmo na juventude.', img:'../static/imagens/yeshua2024.jpg'}
       ]
     },
     {
       left:[
-        {year:'2025', title:'(Re)aperta VI', desc:'Um retiro inesquecível', img:'../static/imagens/yeshua2025.jpg', big:true}
+        {year:'2025', title:'Desperta VI', desc:'Um retiro inesquecível', img:'../static/imagens/yeshua2025.jpg', big:true}
       ],
       right:'invite'
     }
