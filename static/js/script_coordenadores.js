@@ -10,7 +10,6 @@
         role: "Coordenadora",
         quote: "“Eis a serva do Senhor, faça-se em mim segundo a tua palavra.”",
         source: "— Lc 1,38",
-        bio: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         photo: "../static/imagens/Ana_coord.png",
         whatsapp: "5541920049569"
       },
@@ -19,7 +18,6 @@
         role: "Coordenadora",
         quote: "“Tudo o que fizerem, façam de coração, como para o Senhor.”",
         source: "— Cl 3,23",
-        bio: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         photo: "../static/imagens/Bella_coord.jpeg",
         whatsapp: "554188964460"
       },
@@ -28,7 +26,6 @@
         role: "Coordenador",
         quote: "“Cada um dê conforme decidiu em seu coração, não com pesar ou por obrigação.”",
         source: "— 2Cor 9,7",
-        bio: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         photo: "../static/imagens/marlon_coor.PNG",
         whatsapp: "554191044959"
       },
@@ -37,7 +34,6 @@
         role: "Coordenadora",
         quote: "“A santidade não consiste em fazer coisas extraordinárias, mas em fazer bem as coisas pequenas.”",
         source: "— Santa Teresinha do Menino Jesus",
-        bio: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         photo: "../static/imagens/Ray_coord.png",
         whatsapp: "554192398995"
       }
@@ -48,7 +44,6 @@
         role: "Equipe de apoio/pascom",
         quote: "“O Meu Imaculado Coração será o teu refúgio e o caminho que te conduzirá até Deus.”",
         source: "— Nossa senhora de fátima",
-        bio: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         photo: "../static/imagens/foto-coord&servos/giih_serv.jpeg"
       },
       {
@@ -56,7 +51,6 @@
         role: "Equipe de apoio/pascom",
         quote: "“Faz o que deves e estás no que fazes.”",
         source: "— São Josemaria Escrivá",
-        bio: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         photo: "../static/imagens/foto-coord&servos/mirian_serv.jpeg"
       },
       {
@@ -64,7 +58,6 @@
         role: "Equipe de apoio",
         quote: "“A medida do amor é amar sem medida.”",
         source: "— Santo Agostinho",
-        bio: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         photo: "../static/imagens/foto-coord&servos/pyetro_serv.jpeg"
       },
     ]
@@ -95,7 +88,6 @@
         <p class="card-role">${person.role}</p>
         <h3 class="card-name">${person.name}</h3>
         <p class="card-quote">${person.quote}<span class="card-quote-source">${person.source}</span></p>
-        <p class="card-bio">${person.bio}</p>
         ${cta}
       </div>`;
     return card;
