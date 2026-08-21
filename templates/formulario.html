@@ -36,37 +36,35 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/formulario.css') }}">
 
-  
-  
 </head>
 
 <body>
 
   <!-- NAV -->
   <nav>
-  <div class="nav-logo"><a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}"></a></div>
+    <div class="nav-logo"><a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}"></a></div>
     <button class="nav-menu" aria-label="Abrir menu">
       ☰
     </button>
-</nav>
+  </nav>
 
-<!-- Aba menu inicial -->
-<div class="nav-overlay"></div>
+  <!-- Aba menu inicial -->
+  <div class="nav-overlay"></div>
 
-<!-- Menu lateral -->
-<div class="nav-drawer">
-  <div class="nav-drawer-header">
-    <span>Menu</span>
-    <button class="nav-close">✕</button>
+  <!-- Menu lateral -->
+  <div class="nav-drawer">
+    <div class="nav-drawer-header">
+      <span>Menu</span>
+      <button class="nav-close">✕</button>
+    </div>
+
+    <a href="{{ url_for('home') }}#inicio">Início</a>
+    <a href="{{ url_for('home') }}#memorias">Memórias</a>
+    <a href="{{ url_for('home') }}#retiro">O Retiro</a>
+    <a href="{{ url_for('home') }}#local">Local</a>
+    <a href="{{ url_for('home') }}#agenda">Agenda</a>
+    <a href="{{ url_for('home') }}#equipe">Equipe</a>
   </div>
-
-  <a href="{{ url_for('home') }}#inicio">Início</a>
-  <a href="{{ url_for('home') }}#memorias">Memórias</a>
-  <a href="{{ url_for('home') }}#retiro">O Retiro</a>
-  <a href="{{ url_for('home') }}#local">Local</a>
-  <a href="{{ url_for('home') }}#agenda">Agenda</a>
-  <a href="{{ url_for('home') }}#equipe">Equipe</a>
-</div>
 
   <!-- FORMULÁRIO -->
 
@@ -77,7 +75,7 @@
       <div class="insc-header">
 
         <a href="{{ url_for('home') }}">
-          <img class="insc-logo " src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}">
+          <img class="insc-logo" src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}">
         </a>
 
         <span class="insc-tag">Inscrição</span>
@@ -94,581 +92,876 @@
       </div>
       {% endif %}
 
-<form 
-  id="form-inscricao"
-  action="/enviar"
-  method="POST"
-  enctype="multipart/form-data">
-    
-      <div id="form-wrap" {% if sucesso %}style="display:none;"{% endif %}>
+      <form
+        id="form-inscricao"
+        action="/enviar"
+        method="POST"
+        enctype="multipart/form-data">
 
-        <!-- SEÇÃO -->
+        <div id="form-wrap" {% if sucesso %}style="display:none;"{% endif %}>
 
-        <!-- DADOS PESSOAIS -->
+          <!-- DADOS PESSOAIS -->
 
-<div class="form-section">
+          <div class="form-section">
 
-  <span class="form-section-title">
-    Dados pessoais
-  </span>
-
-  <div class="form-field">
-    <label>Seu nome completo *</label>
-
-    <input 
-      type="text" 
-      id="f-nome"
-      name="nome"
-      placeholder="Ex: Maria da Silva"
-      >
-  </div>
-
-  <div class="form-row">
-
-    <div class="form-field">
-      <label>Seu telefone *</label>
-
-      <input 
-        type="tel" 
-        id="f-tel"
-        name="telefone"
-        maxlength="15"
-        placeholder="(00) 00000-0000"
-        oninput="mascaraTel(this)">
-    </div>
-
-    <div class="form-field">
-      <label>Seu e-mail *</label>
-
-      <input 
-        type="email" 
-        id="f-email"
-        name="email"
-        placeholder="seuemail@email.com">
-    </div>
-
-  </div>
-
-  <div class="form-field">
-    <label>Data de nascimento *</label>
-
-    <input 
-      type="text"
-      id="f-nasc"
-      name="data_nascimento"
-      placeholder="dd/mm/aaaa"
-      maxlength="10"
-      inputmode="numeric"
-      oninput="mascaraData(this)"
-      autocomplete="off">
-  </div>
-
-</div>
-
-<!-- RESPONSÁVEL -->
-
-<div class="form-section">
-
-  <span class="form-section-title">
-    Responsável ou contato de emergência
-  </span>
-
-  <div class="form-field">
-
-    <label>
-      Nome do responsável ou contato de emergência*
-    </label>
-
-    <input
-      type="text"
-      id="f-responsavel"
-      name="nome_responsavel"
-      placeholder="Ex: João da Silva">
-
-  </div>
-
-  <div class="form-row">
-
-    <div class="form-field">
-
-      <label>
-        Parentesco *
-      </label>
-
-      <select id="f-parentesco" name="grau_parentesco">
-
-        <option value="">
-          Selecione
-        </option>
-
-        <option>
-          Pai
-        </option>
-
-        <option>
-          Mãe
-        </option>
-
-        <option>
-          Irmão(a)
-        </option>
-
-        <option>
-          Tio(a)
-        </option>
-
-        <option>
-          Avó/Avô
-        </option>
-
-        <option>
-          Responsável legal
-        </option>
-
-        <option>
-          Outro
-        </option>
-
-      </select>
-
-    </div>
-
-    <div class="form-field">
-
-      <label>
-        Telefone do responsável ou contato de emergência*
-      </label>
-
-      <input
-        type="tel"
-        id="f-tel-responsavel"
-        name="telefone_responsavel"
-        placeholder="(00) 00000-0000"
-        maxlength="15"
-        oninput="mascaraTel(this)">
-
-    </div>
-
-  </div>
-
-</div>
-
-<!-- SOBRE VOCÊ -->
-
-<div class="form-section">
-
-  <span class="form-section-title">
-    Sobre você
-  </span>
-
-  <div class="form-field">
-
-    <label>
-      Já participou de algum retiro? *
-    </label>
-
-    <div class="radio-group">
-
-      <div class="radio-opt">
-        <input 
-          type="radio" 
-          id="sim" 
-          name="retiro_ant"
-          value="sim">
-
-        <label for="sim">✓ Sim</label>
-      </div>
-
-      <div class="radio-opt">
-        <input 
-          type="radio" 
-          id="nao" 
-          name="retiro_ant"
-          value="nao">
-
-        <label for="nao">✗ Não</label>
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="form-field">
-
-    <label>
-      O que espera deste retiro? *
-    </label>
-
-    <textarea 
-      id="f-expectativa"
-      name="expectativa"
-      placeholder="Conte um pouco sobre suas expectativas..."></textarea>
-
-  </div>
-
-</div>
-
-<!-- SAÚDE -->
-
-<div class="form-section">
-
-  <span class="form-section-title">
-    Informações de saúde
-  </span>
-
-  <!-- ALERGIA -->
-
-  <div class="form-field">
-
-    <label>
-      Possui alguma alergia alimentar? *
-    </label>
-
-    <div class="radio-group">
-
-      <div class="radio-opt">
-        <input 
-          type="radio"
-          id="alergia-sim"
-          name="alergia"
-          value="sim"
-          onchange="toggleExtra('extra-alergia', this.value)">
-
-        <label for="alergia-sim">✓ Sim</label>
-      </div>
-
-      <div class="radio-opt">
-        <input 
-          type="radio"
-          id="alergia-nao"
-          name="alergia"
-          value="nao"
-          onchange="toggleExtra('extra-alergia', this.value)">
-
-        <label for="alergia-nao">✗ Não</label>
-      </div>
-
-    </div>
-
-    <div class="campo-extra" id="extra-alergia">
-
-      <textarea 
-        id="f-alergia"
-        name="descricao_alergia"
-        placeholder="Descreva sua alergia..."></textarea>
-
-    </div>
-
-  </div>
-
-  <!-- REMÉDIO -->
-
-  <div class="form-field">
-
-    <label>
-      Utiliza algum medicamento? *
-    </label>
-
-    <div class="radio-group">
-
-      <div class="radio-opt">
-        <input 
-          type="radio"
-          id="remedio-sim"
-          name="remedio"
-          value="sim"
-          onchange="toggleExtra('extra-remedio', this.value)">
-
-        <label for="remedio-sim">✓ Sim</label>
-      </div>
-
-      <div class="radio-opt">
-        <input 
-          type="radio"
-          id="remedio-nao"
-          name="remedio"
-          value="nao"
-          onchange="toggleExtra('extra-remedio', this.value)">
-
-        <label for="remedio-nao">✗ Não</label>
-      </div>
-
-    </div>
-
-    <div class="campo-extra" id="extra-remedio">
-
-      <textarea 
-        id="f-remedio"
-        name="nome_medicamento"
-        placeholder="Informe os medicamentos..."></textarea>
-
-    </div>
-
-  </div>
-
-</div>
-
-<!-- FOTO -->
-
-<div class="form-section">
-
-  <span class="form-section-title">
-    Foto
-  </span>
-
-  <div class="form-field">
-
-    <div class="checkbox-opt">
-
-        <input
-            type="checkbox"
-            id="direito_de_imag"
-            name="direito_de_imag"
-            value="sim"
-            required
-        >
-
-        <label for="direito_de_imag">
-            AUTORIZO O USO DA MINHA IMAGEM.
-
-            <span>
-                (OBS: A foto será utilizada para fins de identificação e divulgação)
+            <span class="form-section-title">
+              Dados pessoais
             </span>
-        </label>
 
-    </div>
+            <div class="form-field">
+              <label for="f-nome">Seu nome completo *</label>
 
-</div>
+              <input
+                type="text"
+                id="f-nome"
+                name="nome"
+                placeholder="Ex: Maria da Silva"
+                required>
+            </div>
 
-  <div class="upload-area">
+            <div class="form-row">
 
-    <input 
-      type="file"
-      id="f-foto"
-      name="foto_participante"
-      accept="image/*"
-      onchange="previewFoto(this)">
+              <div class="form-field">
+                <label for="f-tel">Seu telefone *</label>
 
-    <div id="upload-prompt">
+                <input
+                  type="tel"
+                  id="f-tel"
+                  name="telefone"
+                  maxlength="15"
+                  placeholder="(00) 00000-0000"
+                  oninput="mascaraTel(this)"
+                  required>
+              </div>
 
-      <div class="upload-icon">
-        📷
-      </div>
+              <div class="form-field">
+                <label for="f-email">Seu e-mail *</label>
 
-      <p class="upload-text">
-        <strong>Clique para enviar sua foto</strong>
-      </p>
+                <input
+                  type="email"
+                  id="f-email"
+                  name="email"
+                  placeholder="seuemail@email.com"
+                  required>
+              </div>
 
-      <p class="upload-hint">
-        JPG, PNG ou WEBP
-      </p>
+            </div>
 
-    </div>
+            <div class="form-field">
+              <label for="f-nasc">Data de nascimento *</label>
 
-  </div>
+              <input
+                type="text"
+                id="f-nasc"
+                name="data_nascimento"
+                placeholder="dd/mm/aaaa"
+                maxlength="10"
+                inputmode="numeric"
+                oninput="mascaraData(this)"
+                autocomplete="off"
+                required>
+            </div>
 
-  <!-- PREVIEW -->
+          </div>
 
-  <div class="foto-preview" id="foto-preview">
+          <!-- CAMISETA -->
 
-    <img id="foto-img" src="" alt="Prévia da foto">
+          <div class="form-section">
 
-    <span id="foto-nome"></span>
+            <span class="form-section-title">
+              Camiseta
+            </span>
 
-    <button 
-      type="button"
-      onclick="removerFoto()">
+            <div class="form-field">
 
-      Remover foto
+              <label>Qual modelo de camiseta você prefere? *</label>
 
-    </button>
+              <div class="radio-group">
 
-  </div>
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="feminino"
+                    name="modelo_camiseta"
+                    value="feminino"
+                    required>
 
-</div>
+                  <label for="feminino">Feminino</label>
+                </div>
 
-<!-- ERRO -->
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="masculino"
+                    name="modelo_camiseta"
+                    value="masculino"
+                    required>
 
-<div class="form-erro" id="form-erro"></div>
+                  <label for="masculino">Masculino</label>
+                </div>
 
-<!-- BOTÃO -->
+              </div>
 
-<div class="alerta-final">
+            </div>
 
-        ⚠️ Envie o comprovante para um dos coordenadores.
-        Sua vaga será confirmada somente após 
-        a identificação do pagamento.
+            <div class="form-field">
 
-    </div>
+              <label for="f-tamanho">Tamanho da camiseta *</label>
 
-<button 
-  type="button"
-  id="btnEnviar"
-  class="btn-submit"
-  onclick="enviarForm()">
+              <select id="f-tamanho" name="tamanho_camiseta" required>
+                <option value="">Selecione</option>
+                <option>PP</option>
+                <option>P</option>
+                <option>M</option>
+                <option>G</option>
+                <option>GG</option>
+                <option>XG</option>
+                <option>XXG</option>
+              </select>
 
-  Confirmar inscrição
+            </div>
 
-</button>
+          </div>
 
-</div>
-<!-- FECHA form-wrap -->
+          <!-- RESPONSÁVEL -->
 
-</form>
+          <div class="form-section">
 
-<!-- SUCESSO -->
+            <span class="form-section-title">
+              Responsável ou contato de emergência
+            </span>
 
-<!-- SUCESSO -->
+            <div class="form-field">
 
+              <label for="f-responsavel">Nome do responsável ou contato de emergência *</label>
 
-{% if sucesso %}
+              <input
+                type="text"
+                id="f-responsavel"
+                name="nome_responsavel"
+                placeholder="Ex: João da Silva"
+                required>
 
+            </div>
 
-<div class="insc-sucesso" id="insc-sucesso" style="display:flex;">
+            <div class="form-row">
 
-    <div class="sucesso-icon">
-        ✓
-    </div>
+              <div class="form-field">
 
-    <h2>
-        Inscrição recebida com sucesso!
-    </h2>
+                <label for="f-parentesco">Parentesco *</label>
 
-    <p>
-        Obrigado,
-        <strong>{{ nome }}</strong>!
-    </p>
+                <select id="f-parentesco" name="grau_parentesco" required>
+                  <option value="">Selecione</option>
+                  <option>Pai</option>
+                  <option>Mãe</option>
+                  <option>Irmão(a)</option>
+                  <option>Tio(a)</option>
+                  <option>Avó/Avô</option>
+                  <option>Responsável legal</option>
+                  <option>Outro</option>
+                </select>
 
-    <p>
-        Recebemos sua inscrição com sucesso e ela já foi registrada em nosso sistema.
-    </p>
+              </div>
 
-    <p>
-        Agora falta apenas um último passo para confirmar sua participação no
-        <strong>VII Desperta</strong>.
-    </p>
+              <div class="form-field">
 
-    <!-- STEPS -->
+                <label for="f-tel-responsavel">Telefone do responsável ou contato de emergência *</label>
 
-    <div class="sucesso-steps">
+                <input
+                  type="tel"
+                  id="f-tel-responsavel"
+                  name="telefone_responsavel"
+                  placeholder="(00) 00000-0000"
+                  maxlength="15"
+                  oninput="mascaraTel(this)"
+                  required>
 
-        <div class="sucesso-step completo">
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- SOBRE VOCÊ -->
+
+          <div class="form-section">
+
+            <span class="form-section-title">
+              Sobre você
+            </span>
+
+            <div class="form-field">
+
+              <label>Já participou de algum retiro? *</label>
+
+              <div class="radio-group">
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="sim"
+                    name="retiro_ant"
+                    value="sim"
+                    required>
+
+                  <label for="sim">✓ Sim</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="nao"
+                    name="retiro_ant"
+                    value="nao"
+                    required>
+
+                  <label for="nao">✗ Não</label>
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="form-field">
+
+              <label for="f-expectativa">O que espera deste retiro? *</label>
+
+              <textarea
+                id="f-expectativa"
+                name="expectativa"
+                placeholder="Conte um pouco sobre suas expectativas..."
+                required></textarea>
+
+            </div>
+
+            <div class="form-field">
+
+              <label for="f-chamou_ret">Como você ficou sabendo do VII Desperta? *</label>
+
+              <select id="f-chamou_ret" name="chamou_ret" required>
+                <option value="">Selecione</option>
+                <option>Instagram</option>
+                <option>WhatsApp</option>
+                <option>Amigos</option>
+                <option>Família</option>
+                <option>Grupo de jovens</option>
+                <option>Paróquia/Igreja</option>
+                <option>Outro</option>
+              </select>
+
+            </div>
+
+            <div class="form-field">
+
+              <label>Como está a ansiedade para o retiro? *</label>
+
+              <div class="radio-group radio-group-vertical">
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="ansiedade-obrigado"
+                    name="ansiedade"
+                    value="Indo porque me obrigaram"
+                    required>
+
+                  <label for="ansiedade-obrigado">Estou indo porque me obrigaram</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="ansiedade-pouco"
+                    name="ansiedade"
+                    value="Não estou ligando muito">
+
+                  <label for="ansiedade-pouco">Não estou ligando muito para isso</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="ansiedade-animado"
+                    name="ansiedade"
+                    value="Estou esperando muito o retiro">
+
+                  <label for="ansiedade-animado">Estou muito esperando isso desde o início do ano</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="ansiedade-muito_animado"
+                    name="ansiedade"
+                    value="Já estou com a roupa">
+
+                  <label for="ansiedade-muito_animado">Já estou com a roupa separada para ir desde o início do ano!</label>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- SAÚDE -->
+
+          <div class="form-section">
+
+            <span class="form-section-title">
+              Informações de saúde
+            </span>
+
+            <!-- Restrição de carne nas SEXTAS-FEIRAS -->
+
+            <div class="form-field">
+              <label>Você deseja optar por uma alimentação sem carne às sextas-feiras durante o retiro? *</label>
+
+              <div class="radio-group">
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="carne_sex-sim"
+                    name="carne_sex"
+                    value="sim"
+                    required>
+
+                  <label for="carne_sex-sim">✓ Sim</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="carne_sex-nao"
+                    name="carne_sex"
+                    value="nao">
+
+                  <label for="carne_sex-nao">✗ Não</label>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ALERGIA -->
+
+            <div class="form-field">
+
+              <label>Você possui alguma condição alimentar? (EX: VEGETARIANO/CELÍACO/ALÉRGICO) *</label>
+
+              <div class="radio-group">
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="alergia-sim"
+                    name="alergia"
+                    value="sim"
+                    onchange="toggleExtra('extra-alergia', this.value)"
+                    required>
+
+                  <label for="alergia-sim">✓ Sim</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="alergia-nao"
+                    name="alergia"
+                    value="nao"
+                    onchange="toggleExtra('extra-alergia', this.value)">
+
+                  <label for="alergia-nao">✗ Não</label>
+                </div>
+
+              </div>
+
+              <div class="campo-extra" id="extra-alergia">
+
+                <textarea
+                  id="f-alergia"
+                  name="descricao_alergia"
+                  placeholder="Descreva sua alergia..."></textarea>
+
+              </div>
+
+            </div>
+
+            <!-- REMÉDIO -->
+
+            <div class="form-field">
+
+              <label>Utiliza algum medicamento? *</label>
+
+              <div class="radio-group">
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="remedio-sim"
+                    name="remedio"
+                    value="sim"
+                    onchange="toggleExtra('extra-remedio', this.value)"
+                    required>
+
+                  <label for="remedio-sim">✓ Sim</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="remedio-nao"
+                    name="remedio"
+                    value="nao"
+                    onchange="toggleExtra('extra-remedio', this.value)">
+
+                  <label for="remedio-nao">✗ Não</label>
+                </div>
+
+              </div>
+
+              <div class="campo-extra" id="extra-remedio">
+
+                <textarea
+                  id="f-remedio"
+                  name="nome_medicamento"
+                  placeholder="Informe os medicamentos e qual horario ..."></textarea>
+
+              </div>
+
+            </div>
+
+            <!-- NECESSIDADES ESPECIAIS -->
+
+            <div class="form-field">
+
+              <label>Existe alguma necessidade, limitação ou informação importante que a equipe deva saber para proporcionar uma melhor experiência durante o retiro? *</label>
+
+              <div class="radio-group">
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="necessidade-sim"
+                    name="necessidade"
+                    value="sim"
+                    onchange="toggleExtra('extra-necessidade', this.value)"
+                    required>
+
+                  <label for="necessidade-sim">✓ Sim</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="necessidade-nao"
+                    name="necessidade"
+                    value="nao"
+                    onchange="toggleExtra('extra-necessidade', this.value)">
+
+                  <label for="necessidade-nao">✗ Não</label>
+                </div>
+
+              </div>
+
+              <div class="campo-extra" id="extra-necessidade">
+
+                <textarea
+                  id="f-necessidade"
+                  name="descricao_necessidade"
+                  placeholder="Descreva sua necessidade..."></textarea>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- TRANSPORTE -->
+
+          <div class="form-section">
+
+            <span class="form-section-title">
+              Transporte
+            </span>
+
+            <div class="form-field">
+
+              <label>Como você irá se deslocar até o retiro? *</label>
+
+              <div class="radio-group radio-group-vertical">
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="transporte-responsavel"
+                    name="transporte"
+                    value="Com meu responsável"
+                    onchange="toggleCampo('extra-transporte', true)"
+                    required>
+
+                  <label for="transporte-responsavel">Vou com meu responsável</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="transporte-proprio"
+                    name="transporte"
+                    value="Meu transporte próprio"
+                    onchange="toggleCampo('extra-transporte', true)">
+
+                  <label for="transporte-proprio">Irei com meu próprio meio de transporte</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="transporte-ajuda"
+                    name="transporte"
+                    value="Preciso de ajuda com transporte"
+                    onchange="toggleCampo('extra-transporte', false)">
+
+                  <label for="transporte-ajuda">Preciso de ajuda com transporte</label>
+                </div>
+
+              </div>
+
+              <!-- Só faz sentido perguntar sobre carona a quem tem meio de transporte próprio -->
+              <div class="campo-extra" id="extra-transporte" style="display:none;">
+
+                <label>Existe alguma possibilidade de dar carona para quem necessitar ir até o evento? *</label>
+
+                <div class="radio-group">
+
+                  <div class="radio-opt">
+                    <input
+                      type="radio"
+                      id="carona-sim"
+                      name="carona"
+                      value="sim">
+
+                    <label for="carona-sim">Sim</label>
+                  </div>
+
+                  <div class="radio-opt">
+                    <input
+                      type="radio"
+                      id="carona-nao"
+                      name="carona"
+                      value="nao">
+
+                    <label for="carona-nao">Não</label>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- PAGAMENTO -->
+
+          <div class="form-section">
+
+            <span class="form-section-title">
+              Forma de pagamento
+            </span>
+
+            <div class="form-field">
+
+              <div class="alerta-final">
+                ⚠️ Pagementos via PIX deverão ser realizados para:
+                <br> Rayane Santos
+                <br>Chave PIX : XXXXX-XXXX
+                <br> Envie o comprovante para o mesmo número.
+              </div>
+
+              <label>Como você pretende realizar o pagamento da inscrição? *</label>
+
+              <div class="radio-group radio-group-vertical">
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="pagamento-pix"
+                    name="forma_pagamento"
+                    value="pix"
+                    required>
+
+                  <label for="pagamento-pix">PIX</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="pagamento-dinheiro"
+                    name="forma_pagamento"
+                    value="dinheiro">
+
+                  <label for="pagamento-dinheiro">Dinheiro</label>
+                </div>
+
+                <div class="radio-opt">
+                  <input
+                    type="radio"
+                    id="pagamento-parcelado"
+                    name="forma_pagamento"
+                    value="parcelado">
+
+                  <label for="pagamento-parcelado">Parcelado</label>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- FOTO -->
+
+          <div class="form-section">
+
+            <span class="form-section-title">
+              Foto
+            </span>
+
+            <div class="form-field">
+
+              <div class="checkbox-opt">
+
+                <input
+                  type="checkbox"
+                  id="direito_de_imag"
+                  name="direito_de_imag"
+                  value="sim"
+                  required>
+
+                <label for="direito_de_imag">
+                  AUTORIZO O USO DA MINHA IMAGEM.
+                  <span>(OBS: A foto será utilizada para fins de identificação e divulgação)</span>
+                </label>
+
+              </div>
+
+            </div>
+
+            <div class="upload-area">
+
+              <input
+                type="file"
+                id="f-foto"
+                name="foto_participante"
+                accept="image/*"
+                onchange="previewFoto(this)">
+
+              <div id="upload-prompt">
+
+                <div class="upload-icon">📷</div>
+
+                <p class="upload-text"><strong>Clique para enviar sua foto</strong></p>
+
+                <p class="upload-hint">JPG, PNG ou WEBP</p>
+
+              </div>
+
+            </div>
+
+            <!-- PREVIEW -->
+
+            <div class="foto-preview" id="foto-preview">
+
+              <img id="foto-img" src="" alt="Prévia da foto">
+
+              <span id="foto-nome"></span>
+
+              <button type="button" onclick="removerFoto()">Remover foto</button>
+
+            </div>
+
+          </div>
+
+          <!-- ERRO -->
+
+          <div class="form-erro" id="form-erro"></div>
+
+          <!-- BOTÃO -->
+
+          <div class="alerta-final">
+            ⚠️ Apos o envio do formulario envie o comprovante de pagamento para um dos coordenadores.
+            Sua vaga será confirmada somente após
+            a identificação do pagamento.
+          </div>
+
+          <button
+            type="button"
+            id="btnEnviar"
+            class="btn-submit"
+            onclick="enviarForm()">
+
+            Confirmar inscrição
+
+          </button>
+
+        </div>
+        <!-- FECHA form-wrap -->
+
+      </form>
+
+      <!-- SUCESSO -->
+
+      {% if sucesso %}
+
+      <div class="insc-sucesso" id="insc-sucesso" style="display:flex;">
+
+        <div class="sucesso-icon">✓</div>
+
+        <h2>Inscrição recebida com sucesso!</h2>
+
+        <p>Obrigado, <strong>{{ nome }}</strong>!</p>
+
+        <p>Recebemos sua inscrição com sucesso e ela já foi registrada em nosso sistema.</p>
+
+        <p>Agora falta apenas um último passo para confirmar sua participação no <strong>VII Desperta</strong>.</p>
+
+        <!-- STEPS -->
+
+        <div class="sucesso-steps">
+
+          <div class="sucesso-step completo">
             <div class="sucesso-step-icone">✓</div>
             <span>Inscrição realizada</span>
-        </div>
+          </div>
 
-        <div class="sucesso-step-linha"></div>
+          <div class="sucesso-step-linha"></div>
 
-        <div class="sucesso-step pendente">
+          <div class="sucesso-step pendente">
             <div class="sucesso-step-icone">💳</div>
             <span>Realizar pagamento</span>
+          </div>
+
         </div>
 
-    </div>
+        <div class="pagamento-box">
 
-    <div class="pagamento-box">
-
-        <div class="pagamento-titulo">
+          <div class="pagamento-titulo">
             <span class="pagamento-icone">💳</span>
             Pagamento da inscrição
-        </div>
+          </div>
 
-        <div class="pagamento-grid">
+          <div class="pagamento-grid">
 
             <div class="pagamento-campo">
-                <span class="pagamento-label">Valor da inscrição</span>
-                <span class="pagamento-valor">R$ XX,XX</span>
+              <span class="pagamento-label">Valor da inscrição</span>
+              <span class="pagamento-valor">R$ 100,00</span>
             </div>
 
             <div class="pagamento-campo">
-                <span class="pagamento-label">Chave PIX (CNPJ)</span>
-                <span class="pagamento-valor pix">00.000.000/0000-00</span>
+              <span class="pagamento-label">Chave PIX ()</span>
+              <span class="pagamento-valor pix">00.000.000/0000-00</span>
             </div>
 
-        </div>
+          </div>
 
-        <button
-          type="button"
-          class="btn-pix"
-          id="btnPix"
-          onclick="copiarPix()">
+          <button
+            type="button"
+            class="btn-pix"
+            id="btnPix"
+            onclick="copiarPix()">
 
-          📋 Copiar chave PIX
+            📋 Copiar chave PIX
 
-        </button>
+          </button>
 
-        <div class="pagamento-contato">
+          <div class="pagamento-contato">
 
             <div class="pagamento-contato-info">
 
-                <div class="pagamento-contato-avatar">
-                    <img src="{{ url_for('static', filename='imagens/coordenador.jpg') }}" alt="Foto do responsável">
-                </div>
+              <div class="pagamento-contato-avatar">
+                <img src="{{ url_for('static', filename='imagens/Ray_coord.png') }}" alt="Foto do responsável">
+              </div>
 
-                <div class="pagamento-contato-texto">
-                    <span class="pagamento-label">Enviar comprovante para</span>
-                    <strong>Nome do Responsável</strong>
-                    <span class="pagamento-contato-tel">(00) 00000-0000</span>
-                </div>
+              <div class="pagamento-contato-texto">
+                <span class="pagamento-label">Enviar comprovante para</span>
+                <strong>Rayane Santos</strong>
+                <span class="pagamento-contato-tel">(41) 99239-8995</span>
+              </div>
 
             </div>
 
             <a
-                class="btn-whats-comprovante"
-                href="https://wa.me/5500000000000"
-                target="_blank"
-                rel="noopener">
+              class="btn-whats-comprovante"
+              href="https://wa.me/554192398995"
+              target="_blank"
+              rel="noopener">
 
-                💬 Chamar no WhatsApp
+              💬 Chamar no WhatsApp
 
             </a>
 
+          </div>
+
         </div>
 
-    </div>
+        <div class="alerta-final">
 
-    <div class="alerta-final">
+          <div class="alerta-final-titulo">⚠️ Importante</div>
 
-        <div class="alerta-final-titulo">
-            ⚠️ Importante
-        </div>
-
-        <p class="alerta-final-texto">
+          <p class="alerta-final-texto">
             Sua inscrição foi recebida, porém a vaga será confirmada somente após:
-        </p>
+          </p>
 
-        <ul class="alerta-final-lista">
+          <ul class="alerta-final-lista">
             <li>realização do pagamento;</li>
             <li>envio do comprovante para a coordenação;</li>
             <li>identificação do pagamento pela organização.</li>
-        </ul>
+          </ul>
+
+        </div>
+
+        <div class="sucesso-botoes">
+
+          <a href="{{ url_for('home') }}">
+            <button class="btn-submit-home">← Voltar para a página inicial</button>
+          </a>
+
+          <a href="{{ url_for('home') }}#equipe">
+            <button class="btn-submit-equipe">Equipe de coordenação</button>
+          </a>
+
+        </div>
+
+      </div>
+
+      {% endif %}
 
     </div>
 
-    <div class="sucesso-botoes">
+  </div>
 
-        <a href="{{ url_for('home') }}">
-            <button class="btn-submit-home">
-                ← Voltar para a página inicial
-            </button>
-        </a>
+  <script src="{{ url_for('static', filename='js/script_formulario.js') }}"></script>
 
-        <a href="{{ url_for('home') }}#equipe">
-            <button class="btn-submit-equipe">
-                Equipe de coordenação
-            </button>
-        </a>
+  <!--
+    Função auxiliar independente do script_formulario.js,
+    usada pelos novos campos condicionais de Transporte e Pagamento.
+    Se preferir, pode mover esse bloco para dentro do script_formulario.js.
+  -->
+  <script>
+    function toggleCampo(id, mostrar) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = mostrar ? 'block' : 'none';
 
-    </div>
-
-</div>
-
-{% endif %}
-
-
-
-<script src="{{ url_for('static', filename='js/script_formulario.js') }}"></script>
-
+      // Limpa seleção dos campos escondidos para não enviar dados inconsistentes
+      if (!mostrar) {
+        el.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(function (input) {
+          input.checked = false;
+        });
+      }
+    }
+  </script>
 
 </body>
 
