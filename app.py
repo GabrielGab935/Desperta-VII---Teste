@@ -187,13 +187,27 @@ CAMPOS_OBRIGATORIOS = [
     ("telefone", "Telefone"),
     ("email", "E-mail"),
     ("data_nascimento", "Data de nascimento"),
+
+    ("modelo_camiseta", "Modelo de camiseta"),
+    ("tamanho_camiseta", "Tamanho de camiseta"),
+
     ("nome_responsavel", "Nome do responsável"),
     ("grau_parentesco", "Grau de parentesco"),
     ("telefone_responsavel", "Telefone do responsável"),
+
     ("retiro_ant", "Se já participou de algum retiro"),
     ("expectativa", "Expectativa sobre o retiro"),
+    ("chamou_ret", "Como ficou sabendo do retiro"),
+    ("ansiedade", "Como está a ansiedade para o retiro"),
+
+    ("carne_sex", "Alimentação sem carne às sextas-feiras"),
     ("alergia", "Se possui alergia alimentar"),
     ("remedio", "Se utiliza algum medicamento"),
+    ("necessidade", "Se há alguma necessidade especial"),
+
+    ("transporte", "Como irá se deslocar até o retiro"),
+    ("forma_pagamento", "Forma de pagamento"),
+
     ("direito_de_imag", "Autorização de uso de imagem"),
 ]
 
@@ -225,6 +239,13 @@ def validar_formulario(form):
 
     if (form.get("remedio") or "").strip() == "sim" and not (form.get("nome_medicamento") or "").strip():
         erros.append("Informe o(s) medicamento(s) que utiliza.")
+
+    if (form.get("necessidade") or "").strip() == "sim" and not (form.get("descricao_necessidade") or "").strip():
+        erros.append("Descreva a necessidade, limitação ou informação importante.")
+
+    # Carona só é obrigatória para quem disse que vai com transporte próprio
+    if (form.get("transporte") or "").strip() == "proprio" and not (form.get("carona") or "").strip():
+        erros.append("Informe se há possibilidade de dar carona para quem necessitar.")
 
     return erros
 
@@ -353,6 +374,19 @@ def enviar():
     ).strip()
 
     # ══════════════════════════════════════════════════════════════
+    # CAMISETA
+    # ══════════════════════════════════════════════════════════════
+    modelo_camiseta = flask.request.form.get(
+        "modelo_camiseta",
+        ""
+    ).strip()
+
+    tamanho_camiseta = flask.request.form.get(
+        "tamanho_camiseta",
+        ""
+    ).strip()
+
+    # ══════════════════════════════════════════════════════════════
     # RESPONSÁVEL
     # ══════════════════════════════════════════════════════════════
     nome_responsavel = flask.request.form.get(
@@ -383,9 +417,24 @@ def enviar():
         ""
     ).strip()
 
+    chamou_ret = flask.request.form.get(
+        "chamou_ret",
+        ""
+    ).strip()
+
+    ansiedade = flask.request.form.get(
+        "ansiedade",
+        ""
+    ).strip()
+
     # ══════════════════════════════════════════════════════════════
     # SAÚDE
     # ══════════════════════════════════════════════════════════════
+    carne_sex = flask.request.form.get(
+        "carne_sex",
+        ""
+    ).strip()
+
     alergia = flask.request.form.get(
         "alergia",
         ""
@@ -403,6 +452,38 @@ def enviar():
 
     nome_medicamento = flask.request.form.get(
         "nome_medicamento",
+        ""
+    ).strip()
+
+    necessidade = flask.request.form.get(
+        "necessidade",
+        ""
+    ).strip()
+
+    descricao_necessidade = flask.request.form.get(
+        "descricao_necessidade",
+        ""
+    ).strip()
+
+    # ══════════════════════════════════════════════════════════════
+    # TRANSPORTE
+    # ══════════════════════════════════════════════════════════════
+    transporte = flask.request.form.get(
+        "transporte",
+        ""
+    ).strip()
+
+    # Só existe quando "transporte" = "proprio" (campo condicional no form)
+    carona = flask.request.form.get(
+        "carona",
+        ""
+    ).strip()
+
+    # ══════════════════════════════════════════════════════════════
+    # PAGAMENTO
+    # ══════════════════════════════════════════════════════════════
+    forma_pagamento = flask.request.form.get(
+        "forma_pagamento",
         ""
     ).strip()
 
@@ -483,6 +564,10 @@ def enviar():
     # (removidos os prints de depuração com dados pessoais dos
     # inscritos — nome, telefone, alergias, medicamentos etc. não
     # devem ir para o log do servidor em produção)
+    #
+    # IMPORTANTE: a ordem abaixo precisa bater exatamente com a ordem
+    # das colunas na planilha "VII Desperta" (aba de inscrições).
+    # Se você reordenar algo aqui, reordene a mesma coluna na planilha.
 
     planilha.append_row([
 
@@ -491,18 +576,30 @@ def enviar():
         email,
         data_nascimento,
 
+        modelo_camiseta,
+        tamanho_camiseta,
+
         nome_responsavel,
         grau_parentesco,
         telefone_responsavel,
 
         retiro_ant,
         expectativa,
+        chamou_ret,
+        ansiedade,
 
+        carne_sex,
         alergia,
         descricao_alergia,
-
         remedio,
         nome_medicamento,
+        necessidade,
+        descricao_necessidade,
+
+        transporte,
+        carona,
+
+        forma_pagamento,
 
         direito_de_imag,
         link_foto,
