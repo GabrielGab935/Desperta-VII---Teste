@@ -1,4 +1,4 @@
-  *,
+*,
     *::before,
     *::after {
       box-sizing: border-box;
@@ -361,6 +361,18 @@
       box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.08);
 }
 
+    /* Grupo de radio sem opção selecionada */
+    .radio-group.erro .radio-opt label {
+      border-color: #f87171;
+      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.08);
+    }
+
+    /* Checkbox de autorização de imagem não marcado */
+    .checkbox-opt.erro {
+      border-color: #f87171;
+      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.08);
+    }
+
     .form-field textarea {
       min-height: 120px;
       resize: vertical;
@@ -376,11 +388,23 @@
 
     .radio-group {
       display: flex;
+      flex-wrap: wrap;
       gap: 1rem;
     }
 
     .radio-opt {
-      flex: 1;
+      flex: 1 1 45%;
+    }
+
+    /* Grupos com mais de 2 opções: um botão embaixo do outro */
+    .radio-group-vertical {
+      flex-direction: column;
+      flex-wrap: nowrap;
+    }
+
+    .radio-group-vertical .radio-opt {
+      flex: none;
+      width: 100%;
     }
 
     .radio-opt input {
@@ -391,6 +415,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      text-align: center;
 
       padding: 14px;
 
@@ -413,6 +438,23 @@
       border-color: var(--gold);
 
       color: var(--gold);
+    }
+
+    /* Cores específicas do modelo de camiseta */
+    #feminino:checked+label {
+      background: rgba(236, 72, 153, 0.12);
+
+      border-color: #ec4899;
+
+      color: #ec4899;
+    }
+
+    #masculino:checked+label {
+      background: rgba(59, 130, 246, 0.12);
+
+      border-color: #3b82f6;
+
+      color: #3b82f6;
     }
 
     /* EXPANSÍVEL */
