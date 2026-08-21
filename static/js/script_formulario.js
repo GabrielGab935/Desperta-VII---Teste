@@ -540,58 +540,10 @@ async function mostrarPreview(arquivo) {
   /*
    * Formatos que o navegador decodifica nativamente
    * (JPEG, PNG, WEBP...) — prévia normal via ObjectURL.
-   *
-   * Correção de MIME type: imagens salvas/reencaminhadas
-   * pelo WhatsApp (ou por certos apps de compartilhamento
-   * no Android) às vezes chegam com o "type" do arquivo
-   * vazio ou genérico (ex.: "application/octet-stream"),
-   * mesmo sendo um JPEG/PNG válido nos bytes. O Chrome é
-   * rígido: se o Blob usado no ObjectURL não declarar um
-   * tipo image/*, ele recusa a decodificação na <img> —
-   * outros navegadores costumam ser mais tolerantes.
-   * Corrigimos isso reconstruindo o Blob com o tipo
-   * inferido pela extensão do nome do arquivo, só para
-   * fins de exibição (o arquivo original enviado ao
-   * servidor continua intacto).
    */
 
-  const mimeDeclarado = arquivo.type || '';
-
-  let arquivoParaPreview = arquivo;
-
-  if (!mimeDeclarado.startsWith('image/')) {
-
-    const mimePorExtensao =
-      nomeMinusculo.endsWith('.jpg') ||
-      nomeMinusculo.endsWith('.jpeg')
-        ? 'image/jpeg'
-      : nomeMinusculo.endsWith('.png')
-        ? 'image/png'
-      : nomeMinusculo.endsWith('.webp')
-        ? 'image/webp'
-      : nomeMinusculo.endsWith('.gif')
-        ? 'image/gif'
-      : nomeMinusculo.endsWith('.bmp')
-        ? 'image/bmp'
-        : '';
-
-    if (mimePorExtensao) {
-
-      console.warn(
-        '[mostrarPreview] MIME type ausente/incorreto ' +
-        '("' + mimeDeclarado + '"); usando "' +
-        mimePorExtensao + '" (inferido pela extensão) ' +
-        'só para a prévia.'
-      );
-
-      arquivoParaPreview =
-        new Blob([arquivo], { type: mimePorExtensao });
-    }
-  }
-
-
   const objectUrl =
-    URL.createObjectURL(arquivoParaPreview);
+    URL.createObjectURL(arquivo);
 
 
   img.dataset.objectUrl =
@@ -932,6 +884,32 @@ async function previewFoto(input) {
   }
 
   /* ─────────────────────────────
+     VALIDAR GRUPO DE RADIO
+     (marca o grupo em vermelho quando
+     nenhuma opção foi selecionada)
+  ───────────────────────────── */
+
+  function validarGrupoRadio(name, mensagem) {
+
+    const opcoes = document.querySelectorAll('input[name="' + name + '"]');
+    const grupo = opcoes.length ? opcoes[0].closest('.radio-group') : null;
+    const selecionado = document.querySelector('input[name="' + name + '"]:checked');
+
+    if (!selecionado) {
+
+      if (grupo) grupo.classList.add('erro');
+
+      mostrarErro(mensagem);
+
+      return false;
+    }
+
+    if (grupo) grupo.classList.remove('erro');
+
+    return true;
+  }
+
+  /* ─────────────────────────────
      ENVIAR FORMULÁRIO
   ───────────────────────────── */
 
@@ -943,16 +921,26 @@ async function previewFoto(input) {
     const tel = document.getElementById('f-tel');
     const email = document.getElementById('f-email');
     const nasc = document.getElementById('f-nasc');
+    const tamanho = document.getElementById('f-tamanho');
     const responsavel = document.getElementById('f-responsavel');
     const parentesco = document.getElementById('f-parentesco');
     const telResponsavel = document.getElementById('f-tel-responsavel');
     const expectativa = document.getElementById('f-expectativa');
+    const chamouRet = document.getElementById('f-chamou_ret');
     const foto = document.getElementById('f-foto');
 
-    /* limpa bordas */
+    /* limpa bordas e destaques de erro */
 
-   document.querySelectorAll('input, textarea, select').forEach(campo => {
+    document.querySelectorAll('input, textarea, select').forEach(campo => {
       campo.classList.remove('erro');
+    });
+
+    document.querySelectorAll('.radio-group').forEach(grupo => {
+      grupo.classList.remove('erro');
+    });
+
+    document.querySelectorAll('.checkbox-opt').forEach(caixa => {
+      caixa.classList.remove('erro');
     });
 
     /* VALIDAÇÕES */
@@ -993,6 +981,20 @@ async function previewFoto(input) {
       return;
     }
 
+    if (!validarGrupoRadio('modelo_camiseta', 'Selecione o modelo de camiseta.')) {
+
+      return;
+    }
+
+    if (tamanho.value === '') {
+
+      tamanho.classList.add('erro');
+
+      mostrarErro('Selecione o tamanho da camiseta.');
+
+      return;
+    }
+
     if (responsavel.value.trim() === '') {
 
       responsavel.classList.add('erro');
@@ -1020,11 +1022,7 @@ async function previewFoto(input) {
       return;
     }
 
-    const retiro = document.querySelector('input[name="retiro_ant"]:checked');
-
-    if (!retiro) {
-
-      mostrarErro('Selecione se você já participou de algum retiro.');
+    if (!validarGrupoRadio('retiro_ant', 'Selecione se você já participou de algum retiro.')) {
 
       return;
     }
@@ -1038,20 +1036,58 @@ async function previewFoto(input) {
       return;
     }
 
-    const alergia = document.querySelector('input[name="alergia"]:checked');
+    if (chamouRet.value === '') {
 
-    if (!alergia) {
+      chamouRet.classList.add('erro');
 
-      mostrarErro('Informe se possui alergia alimentar.');
+      mostrarErro('Selecione como você ficou sabendo do VII Desperta.');
 
       return;
     }
 
-    const remedio = document.querySelector('input[name="remedio"]:checked');
+    if (!validarGrupoRadio('ansiedade', 'Selecione uma opção sobre como está a sua ansiedade para o retiro.')) {
 
-    if (!remedio) {
+      return;
+    }
 
-      mostrarErro('Informe se utiliza medicamentos.');
+    if (!validarGrupoRadio('carne_sex', 'Informe se deseja optar por alimentação sem carne às sextas-feiras.')) {
+
+      return;
+    }
+
+    if (!validarGrupoRadio('alergia', 'Informe se possui alergia alimentar.')) {
+
+      return;
+    }
+
+    if (!validarGrupoRadio('remedio', 'Informe se utiliza medicamentos.')) {
+
+      return;
+    }
+
+    if (!validarGrupoRadio('necessidade', 'Informe se há alguma necessidade, limitação ou informação importante que a equipe deva saber.')) {
+
+      return;
+    }
+
+    if (!validarGrupoRadio('transporte', 'Selecione como você irá se deslocar até o retiro.')) {
+
+      return;
+    }
+
+    /* Pergunta de carona só é obrigatória quando o campo está visível */
+
+    const extraTransporte = document.getElementById('extra-transporte');
+
+    if (extraTransporte && extraTransporte.style.display !== 'none') {
+
+      if (!validarGrupoRadio('carona', 'Informe se há possibilidade de dar carona para quem necessitar.')) {
+
+        return;
+      }
+    }
+
+    if (!validarGrupoRadio('forma_pagamento', 'Selecione a forma de pagamento.')) {
 
       return;
     }
@@ -1066,6 +1102,10 @@ async function previewFoto(input) {
     );
 
   if (!direitoImagem) {
+
+    const caixaImagem = document.querySelector('.checkbox-opt');
+
+    if (caixaImagem) caixaImagem.classList.add('erro');
 
     mostrarErro(
       'Informe se você autoriza o uso da imagem.'
