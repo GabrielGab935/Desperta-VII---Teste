@@ -4,6 +4,9 @@ import re
 import json
 from datetime import datetime
 from io import BytesIO
+from functools import wraps
+
+from werkzeug.security import check_password_hash
 
 import gspread
 from google.oauth2.service_account import Credentials
@@ -37,6 +40,24 @@ NOME_PLANILHA = "VII Desperta"  # Nome da planilha no Google Sheets
 # Nome da aba (worksheet) usada pela agenda/calendário dentro da mesma planilha
 NOME_ABA_INSCRICOES = os.environ.get("SHEET_NAME_INSCRICOES", "inscrições")
 NOME_ABA_EVENTOS = os.environ.get("SHEET_NAME_EVENTOS", "eventos")
+
+# Aba onde cada pagamento registrado pela coordenação é gravado (uma linha
+# por pagamento). É criada automaticamente na primeira vez que for usada.
+NOME_ABA_PAGAMENTOS = os.environ.get("SHEET_NAME_PAGAMENTOS", "pagamentos")
+
+# Valor total do retiro (usado para calcular "pago / parcial / pendente").
+# A planilha de inscrições não guarda esse valor, então ele vem de config.
+VALOR_RETIRO = float(os.environ.get("VALOR_RETIRO"))
+
+# ══════════════════════════════════════════════════════════════════
+# ÁREA DA COORDENAÇÃO (login/admin)
+# ══════════════════════════════════════════════════════════════════
+# ADMIN_EMAIL: e-mail de acesso da coordenação.
+# ADMIN_SENHA_HASH: gerado uma vez com:
+#   python3 -c "from werkzeug.security import generate_password_hash as g; print(g('sua_senha_aqui'))"
+# e colado como variável de ambiente (nunca a senha em texto puro).
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "")
+ADMIN_SENHA_HASH = os.environ.get("ADMIN_SENHA_HASH", "")
 
 # ══════════════════════════════════════════════════════════════════
 # GOOGLE SHEETS
@@ -91,6 +112,27 @@ def get_aba_eventos():
     cliente_sheet = gspread.authorize(creds)
 
     return cliente_sheet.open(NOME_PLANILHA).worksheet(NOME_ABA_EVENTOS)
+
+
+def get_aba_pagamentos():
+    """
+    Retorna a aba 'pagamentos' (uma linha por pagamento registrado pela
+    coordenação). Se ainda não existir na planilha, ela é criada
+    automaticamente com o cabeçalho esperado.
+    """
+
+    creds = get_credenciais()
+
+    cliente_sheet = gspread.authorize(creds)
+
+    planilha_obj = cliente_sheet.open(NOME_PLANILHA)
+
+    try:
+        return planilha_obj.worksheet(NOME_ABA_PAGAMENTOS)
+    except gspread.exceptions.WorksheetNotFound:
+        aba = planilha_obj.add_worksheet(title=NOME_ABA_PAGAMENTOS, rows=1000, cols=5)
+        aba.append_row(["participante_id", "data", "valor", "obs", "registrado_em"])
+        return aba
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -266,11 +308,169 @@ def row_to_event(row, idx):
 
 
 # ══════════════════════════════════════════════════════════════════
+# DASHBOARD DA COORDENAÇÃO — LEITURA DOS PARTICIPANTES
+# ══════════════════════════════════════════════════════════════════
+# A ordem abaixo tem que bater EXATAMENTE com a ordem das colunas usada
+# em planilha.append_row(...) na rota /enviar, mais a coluna extra
+# "data_inscricao" adicionada ao final (ver comentário lá).
+COLUNAS_INSCRICAO = 27  # 26 campos do formulário + 1 de timestamp
+
+
+def _pagamentos_por_participante():
+    """
+    Lê a aba 'pagamentos' e agrupa os lançamentos por participante_id.
+    Se a aba ainda não existir ou estiver vazia, devolve um dict vazio
+    em vez de derrubar o carregamento do dashboard.
+    """
+
+    agrupado = {}
+
+    try:
+        aba = get_aba_pagamentos()
+        for registro in aba.get_all_records():
+
+            pid_bruto = registro.get("participante_id")
+
+            try:
+                pid = int(pid_bruto)
+            except (TypeError, ValueError):
+                continue
+
+            try:
+                valor = float(registro.get("valor") or 0)
+            except (TypeError, ValueError):
+                valor = 0.0
+
+            agrupado.setdefault(pid, []).append({
+                "data": parse_date(str(registro.get("data", ""))),
+                "valor": valor,
+                "obs": str(registro.get("obs") or ""),
+            })
+
+    except Exception as exc:
+        print(f"[AVISO PAGAMENTOS] {exc}")
+
+    return agrupado
+
+
+def carregar_participantes():
+    """
+    Lê a aba principal (inscrições) linha a linha e monta a lista de
+    participantes no formato que o dashboard (admin.js) espera, já
+    com o histórico de pagamentos de cada um.
+
+    Usa get_all_values() (por posição), não get_all_records() (por
+    cabeçalho), porque o que garante a ordem das colunas aqui é a
+    própria rota /enviar — não depende do texto exato do cabeçalho
+    da planilha.
+    """
+
+    planilha = get_planilha()
+
+    linhas = planilha.get_all_values()
+
+    if len(linhas) <= 1:
+        return []
+
+    pagamentos = _pagamentos_por_participante()
+
+    participantes = []
+
+    # linhas[0] é o cabeçalho; a linha real i (2, 3, 4...) vira o "id"
+    for i, linha in enumerate(linhas[1:], start=2):
+
+        # Protege contra linhas mais curtas (ex.: inscrições antigas
+        # feitas antes de alguma coluna nova ser adicionada)
+        if len(linha) < COLUNAS_INSCRICAO:
+            linha = linha + [""] * (COLUNAS_INSCRICAO - len(linha))
+
+        if not linha[0].strip():
+            continue  # linha em branco no meio da planilha
+
+        participante = {
+            "id": i,
+            "nome": linha[0],
+            "telefone": linha[1],
+            "email": linha[2],
+            "data_nascimento": parse_date(linha[3]),
+
+            "modelo_camiseta": linha[4],
+            "tamanho_camiseta": linha[5],
+
+            "responsavel": {
+                "nome": linha[6],
+                "parentesco": linha[7],
+                "telefone": linha[8],
+            },
+
+            "retiro_ant": linha[9],
+            "expectativa": linha[10],
+            "chamou_ret": linha[11],
+            "ansiedade": linha[12],
+
+            "saude": {
+                "carne_sex": linha[13],
+                "alergia": linha[14],
+                "descricao_alergia": linha[15],
+                "remedio": linha[16],
+                "nome_medicamento": linha[17],
+                "necessidade": linha[18],
+                "descricao_necessidade": linha[19],
+            },
+
+            "transporte": {
+                "tipo": linha[20],
+                "carona": linha[21] or None,
+            },
+
+            "pagamento": {
+                "forma": linha[22],
+                "valor_total": VALOR_RETIRO,
+                "historico": pagamentos.get(i, []),
+            },
+
+            "direito_de_imag": linha[23],
+            "link_foto": linha[24],
+            "link_cracha": linha[25],
+            "data_inscricao": linha[26] or None,
+        }
+
+        participantes.append(participante)
+
+    return participantes
+
+
+def login_requerido(view_func):
+    """Protege rotas do /admin: exige sessão de coordenador ativa."""
+
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
+
+        if not flask.session.get("coordenador_logado"):
+
+            # Rotas de API devolvem 401 em JSON (o front trata e redireciona);
+            # páginas normais redirecionam direto para o login.
+            if flask.request.path.startswith("/admin/api/"):
+                return flask.jsonify({"erro": "Sessão expirada. Faça login novamente."}), 401
+
+            return flask.redirect(flask.url_for("admin_login_page"))
+
+        return view_func(*args, **kwargs)
+
+    return wrapper
+
+
+# ══════════════════════════════════════════════════════════════════
 # FLASK
 # ══════════════════════════════════════════════════════════════════
 app = flask.Flask(__name__)
 
 app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024
+
+# Necessário para as sessões de login da coordenação (flask.session).
+# Em produção, defina SECRET_KEY nas variáveis de ambiente com um valor
+# aleatório e fixo — se ele mudar, todo mundo é deslogado.
+app.secret_key = os.environ.get("SECRET_KEY", "chave-de-desenvolvimento-trocar-em-producao")
 
 from werkzeug.exceptions import RequestEntityTooLarge
 
@@ -327,6 +527,93 @@ def api_events():
         return flask.jsonify({"error": str(exc)}), 500
 
 
+# ══════════════════════════════════════════════════════════════════
+# ÁREA DA COORDENAÇÃO
+# ══════════════════════════════════════════════════════════════════
+
+@app.route("/admin")
+def admin_login_page():
+    """Tela de login. Se já estiver logado, pula direto pro dashboard."""
+    if flask.session.get("coordenador_logado"):
+        return flask.redirect(flask.url_for("admin_dashboard"))
+    return flask.render_template("login.html")
+
+
+@app.route("/admin/login", methods=["POST"])
+def admin_login():
+    """Valida e-mail/senha da coordenação e abre a sessão."""
+
+    dados = flask.request.get_json(silent=True) or flask.request.form
+
+    email = (dados.get("email") or "").strip().lower()
+    senha = dados.get("senha") or ""
+
+    if not ADMIN_EMAIL or not ADMIN_SENHA_HASH:
+        return flask.jsonify({
+            "erro": "Login da coordenação ainda não foi configurado no servidor."
+        }), 500
+
+    if email != ADMIN_EMAIL.strip().lower() or not check_password_hash(ADMIN_SENHA_HASH, senha):
+        return flask.jsonify({"erro": "E-mail ou senha inválidos."}), 401
+
+    flask.session["coordenador_logado"] = True
+    flask.session["coordenador_email"] = email
+
+    return flask.jsonify({"ok": True, "redirect": flask.url_for("admin_dashboard")})
+
+
+@app.route("/admin/logout", methods=["POST"])
+def admin_logout():
+    flask.session.clear()
+    return flask.jsonify({"ok": True, "redirect": flask.url_for("admin_login_page")})
+
+
+@app.route("/admin/dashboard")
+@login_requerido
+def admin_dashboard():
+    return flask.render_template("dashboard.html")
+
+
+@app.route("/admin/api/participantes")
+@login_requerido
+def admin_api_participantes():
+    try:
+        return flask.jsonify(carregar_participantes())
+    except Exception as exc:
+        print(f"[ERRO API PARTICIPANTES] {exc}")
+        return flask.jsonify({"erro": "Não foi possível carregar os participantes agora."}), 500
+
+
+@app.route("/admin/api/participantes/<int:participante_id>/pagamentos", methods=["POST"])
+@login_requerido
+def admin_api_add_pagamento(participante_id):
+
+    dados = flask.request.get_json(silent=True) or {}
+
+    try:
+        valor = float(dados.get("valor"))
+    except (TypeError, ValueError):
+        return flask.jsonify({"erro": "Informe um valor válido."}), 400
+
+    if valor <= 0:
+        return flask.jsonify({"erro": "O valor precisa ser maior que zero."}), 400
+
+    data = (dados.get("data") or "").strip() or datetime.now().strftime("%Y-%m-%d")
+    obs = (dados.get("obs") or "").strip()
+
+    try:
+        aba_pagamentos = get_aba_pagamentos()
+        aba_pagamentos.append_row(
+            [participante_id, data, valor, obs, datetime.now().isoformat()],
+            value_input_option="USER_ENTERED"
+        )
+    except Exception as exc:
+        print(f"[ERRO GRAVAR PAGAMENTO] {exc}")
+        return flask.jsonify({"erro": "Não foi possível salvar o pagamento agora."}), 500
+
+    return flask.jsonify({"ok": True})
+
+
 @app.route("/enviar", methods=["POST"])
 def enviar():
 
@@ -335,6 +622,10 @@ def enviar():
     # (o JS do formulário já valida no navegador, mas nunca confiamos
     # só nisso: se o JS falhar ou for pulado, o servidor barra aqui)
     # ══════════════════════════════════════════════════════════════
+    # Guardado para virar a última coluna da planilha (usado pelo dashboard
+    # da coordenação pra ordenar por "últimos/primeiros inscritos").
+    data_hora_inscricao = datetime.now().isoformat()
+
     erros = validar_formulario(flask.request.form)
 
     if erros:
@@ -603,7 +894,9 @@ def enviar():
 
         direito_de_imag,
         link_foto,
-        link_cracha
+        link_cracha,
+
+        data_hora_inscricao
 
     ], value_input_option="USER_ENTERED")
 
