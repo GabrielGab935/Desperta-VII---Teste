@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Dashboard — Coordenação VII Desperta</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+
+<body>
+
+  <!-- TOPO -->
+  <header class="admin-topbar">
+
+    <div class="admin-brand">
+      <strong>VII Desperta</strong>
+      <span>Dashboard</span>
+    </div>
+
+    <div class="admin-user">
+      <span class="admin-user-nome">Olá, <strong id="nome-coordenador">Coordenador</strong></span>
+      <button class="btn-sair" id="btn-sair">Sair</button>
+    </div>
+
+  </header>
+
+  <div class="admin-page">
+
+    <!-- RESUMO GERAL -->
+    <span class="admin-section-title">Resumo geral</span>
+
+    <div class="stats-grid" id="stats-grid">
+      <!-- preenchido via JS -->
+    </div>
+
+    <div class="mini-stats-grid" id="mini-stats-grid" style="margin-top:1rem;">
+      <!-- preenchido via JS -->
+    </div>
+
+    <!-- BUSCA E FILTROS -->
+    <span class="admin-section-title">Participantes</span>
+
+    <div class="filtros-bar">
+
+      <div class="busca-field">
+        <input type="text" id="busca" placeholder="Pesquisar por nome ou telefone...">
+      </div>
+
+      <div class="filtros-grid">
+
+        <div class="filtro-field">
+          <label for="filtro-ordenacao">Ordenação</label>
+          <select id="filtro-ordenacao">
+            <option value="recentes">Últimos inscritos</option>
+            <option value="antigos">Primeiros inscritos</option>
+            <option value="az">Nome de A a Z</option>
+            <option value="za">Nome de Z a A</option>
+            <option value="mais_novos">Mais novos</option>
+            <option value="mais_velhos">Mais velhos</option>
+          </select>
+        </div>
+
+        <div class="filtro-field">
+          <label for="filtro-camiseta">Modelo da camiseta</label>
+          <select id="filtro-camiseta">
+            <option value="todos">Todos</option>
+            <option value="masculino">Modelo masculino</option>
+            <option value="feminino">Modelo feminino</option>
+          </select>
+        </div>
+
+        <div class="filtro-field">
+          <label for="filtro-idade">Faixa etária</label>
+          <select id="filtro-idade">
+            <option value="todos">Todos</option>
+            <option value="menor">Menores de idade</option>
+            <option value="maior">Maiores de idade</option>
+          </select>
+        </div>
+
+        <div class="filtro-field">
+          <label for="filtro-pagamento">Pagamento</label>
+          <select id="filtro-pagamento">
+            <option value="todos">Todos</option>
+            <option value="pago">Pagamento confirmado</option>
+            <option value="parcial">Pagamento parcial</option>
+            <option value="pendente">Pagamento pendente</option>
+          </select>
+        </div>
+
+        <div class="filtro-field">
+          <label for="filtro-transporte">Transporte</label>
+          <select id="filtro-transporte">
+            <option value="todos">Todos</option>
+            <option value="possui">Possui transporte</option>
+            <option value="ajuda">Precisa de ajuda</option>
+            <option value="carona">Disponível para oferecer carona</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="filtros-resultado" id="filtros-resultado"></div>
+
+    </div>
+
+    <!-- GRID DE PARTICIPANTES -->
+    <div class="participantes-grid" id="participantes-grid" style="margin-top:1.5rem;">
+      <!-- preenchido via JS -->
+    </div>
+
+  </div>
+
+  <!-- MODAL DE DETALHES -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box" id="modal-box">
+      <!-- preenchido via JS -->
+    </div>
+  </div>
+
+  <script>
+    // URLs geradas pelo Flask (Jinja não processa arquivos estáticos .js,
+    // por isso passamos os links renderizados aqui antes de carregar o admin.js)
+    window.ADMIN_URLS = {
+      login_page: "{{ url_for('admin_login_page') }}",
+      login: "{{ url_for('admin_login') }}",
+      logout: "{{ url_for('admin_logout') }}",
+      dashboard: "{{ url_for('admin_dashboard') }}",
+      api_participantes: "{{ url_for('admin_api_participantes') }}"
+    };
+  </script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+
+</body>
+
+</html>

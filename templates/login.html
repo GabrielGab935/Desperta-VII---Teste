@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Área do Coordenador — VII Desperta</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+
+<body>
+
+  <div class="login-page">
+
+    <div class="login-card">
+
+      <div class="login-crest">VD</div>
+
+      <div class="login-header">
+        <span class="login-tag">Área restrita</span>
+        <h1 class="login-title">VII Desperta</h1>
+        <p class="login-sub">Acesso exclusivo para a coordenação do retiro.</p>
+      </div>
+
+      <div class="login-erro" id="login-erro"></div>
+
+      <form id="form-login" novalidate>
+
+        <div class="login-field">
+          <label for="login-email">E-mail</label>
+
+          <input
+            type="email"
+            id="login-email"
+            name="email"
+            placeholder="coordenador@yeshuapj.com.br"
+            autocomplete="username"
+            required>
+        </div>
+
+        <div class="login-field">
+          <label for="login-senha">Senha</label>
+
+          <div class="login-field-wrap">
+            <input
+              type="password"
+              id="login-senha"
+              name="senha"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required>
+
+            <button
+              type="button"
+              class="login-toggle-senha"
+              id="btn-toggle-senha"
+              aria-label="Mostrar senha">
+              👁
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="btn-login">
+          Entrar
+        </button>
+
+      </form>
+
+      <a class="login-voltar" href="{{ url_for('home') }}">← Voltar para o site</a>
+
+    </div>
+
+  </div>
+
+  <script>
+    // URLs geradas pelo Flask (Jinja não processa arquivos estáticos .js,
+    // por isso passamos os links renderizados aqui antes de carregar o admin.js)
+    window.ADMIN_URLS = {
+      login_page: "{{ url_for('admin_login_page') }}",
+      login: "{{ url_for('admin_login') }}",
+      logout: "{{ url_for('admin_logout') }}",
+      dashboard: "{{ url_for('admin_dashboard') }}",
+      api_participantes: "{{ url_for('admin_api_participantes') }}"
+    };
+  </script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+
+</body>
+
+</html>
