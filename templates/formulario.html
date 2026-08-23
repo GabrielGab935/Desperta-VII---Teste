@@ -174,50 +174,72 @@
 
             <div class="form-field">
 
-              <label>Qual modelo de camiseta você prefere? *</label>
+              <div class="checkbox-opt">
 
-              <div class="radio-group">
+                <input
+                  type="checkbox"
+                  id="aceite_camiseta"
+                  name="aceite_camiseta"
+                  value="sim"
+                  onchange="toggleCamiseta(this.checked)">
 
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="feminino"
-                    name="modelo_camiseta"
-                    value="feminino"
-                    required>
-
-                  <label for="feminino">Feminino</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="masculino"
-                    name="modelo_camiseta"
-                    value="masculino"
-                    required>
-
-                  <label for="masculino">Masculino</label>
-                </div>
+                <label for="aceite_camiseta">
+                  QUERO ADQUIRIR A CAMISETA DO EVENTO.
+                  <span>(OBS: será adicionado um valor de R$ 50,00 ao valor da inscrição)</span>
+                </label>
 
               </div>
 
             </div>
 
-            <div class="form-field">
+            <div class="campo-extra" id="extra-camiseta">
 
-              <label for="f-tamanho">Tamanho da camiseta *</label>
+              <div class="form-field">
 
-              <select id="f-tamanho" name="tamanho_camiseta" required>
-                <option value="">Selecione</option>
-                <option>PP</option>
-                <option>P</option>
-                <option>M</option>
-                <option>G</option>
-                <option>GG</option>
-                <option>XG</option>
-                <option>XXG</option>
-              </select>
+                <label>Qual modelo de camiseta você prefere? *</label>
+
+                <div class="radio-group">
+
+                  <div class="radio-opt">
+                    <input
+                      type="radio"
+                      id="feminino"
+                      name="modelo_camiseta"
+                      value="feminino">
+
+                    <label for="feminino">Feminino</label>
+                  </div>
+
+                  <div class="radio-opt">
+                    <input
+                      type="radio"
+                      id="masculino"
+                      name="modelo_camiseta"
+                      value="masculino">
+
+                    <label for="masculino">Masculino</label>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div class="form-field">
+
+                <label for="f-tamanho">Tamanho da camiseta *</label>
+
+                <select id="f-tamanho" name="tamanho_camiseta">
+                  <option value="">Selecione</option>
+                  <option>PP</option>
+                  <option>P</option>
+                  <option>M</option>
+                  <option>G</option>
+                  <option>GG</option>
+                  <option>XG</option>
+                  <option>XXG</option>
+                </select>
+
+              </div>
 
             </div>
 
@@ -855,7 +877,7 @@
 
             <div class="pagamento-campo">
               <span class="pagamento-label">Valor da inscrição</span>
-              <span class="pagamento-valor">R$ 100,00</span>
+              <span class="pagamento-valor">R$ {{ "%.2f"|format(valor_total)|replace(".", ",") }}</span>
             </div>
 
             <div class="pagamento-campo">
@@ -959,6 +981,30 @@
         el.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(function (input) {
           input.checked = false;
         });
+      }
+    }
+
+    /*
+      Mostra/esconde os campos de modelo e tamanho da camiseta
+      de acordo com o checkbox "Quero adquirir a camiseta".
+      Também limpa a seleção quando o checkbox é desmarcado,
+      para não enviar modelo/tamanho de quem não quer a camiseta.
+    */
+    function toggleCamiseta(mostrar) {
+      var el = document.getElementById('extra-camiseta');
+      if (!el) return;
+
+      if (mostrar) {
+        el.classList.add('visivel');
+      } else {
+        el.classList.remove('visivel');
+
+        el.querySelectorAll('input[type="radio"]').forEach(function (input) {
+          input.checked = false;
+        });
+
+        var tamanho = document.getElementById('f-tamanho');
+        if (tamanho) tamanho.value = '';
       }
     }
   </script>
