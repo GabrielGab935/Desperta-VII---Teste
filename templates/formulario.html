@@ -86,7 +86,7 @@
 
       </div>
 
-      {% if erro %}
+      {% if erro and not vagas_esgotadas %}
       <div class="insc-erro-servidor" style="background:#fdecea; border:1px solid #f5c2c0; color:#8a2c27; padding:16px 20px; border-radius:8px; margin-bottom:24px; font-family:'Montserrat', sans-serif; font-size:0.95rem;">
         ⚠️ {{ erro }}
       </div>
@@ -98,7 +98,7 @@
         method="POST"
         enctype="multipart/form-data">
 
-        <div id="form-wrap" {% if sucesso %}style="display:none;"{% endif %}>
+        <div id="form-wrap" {% if sucesso or vagas_esgotadas %}style="display:none;"{% endif %}>
 
           <!-- DADOS PESSOAIS -->
 
@@ -951,6 +951,37 @@
 
           <a href="{{ url_for('home') }}#equipe">
             <button class="btn-submit-equipe">Equipe de coordenação</button>
+          </a>
+
+        </div>
+
+      </div>
+
+      {% endif %}
+
+      <!-- VAGAS ESGOTADAS -->
+
+      {% if vagas_esgotadas and not sucesso %}
+
+      <div class="insc-esgotado" id="insc-esgotado" style="display:flex;">
+
+        <div class="esgotado-icon">🎟️</div>
+
+        <h2>As vagas se esgotaram</h2>
+
+        <p>
+          As vagas do <strong>VII Desperta</strong> já se esgotaram.
+          Fale com a coordenação para saber sobre lista de espera.
+        </p>
+
+        <div class="sucesso-botoes">
+
+          <a href="{{ url_for('home') }}#equipe">
+            <button class="btn-submit-equipe">👥 Falar com a coordenação</button>
+          </a>
+
+          <a href="{{ url_for('home') }}">
+            <button class="btn-submit-home">← Voltar para a página inicial</button>
           </a>
 
         </div>
