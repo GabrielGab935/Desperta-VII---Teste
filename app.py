@@ -47,7 +47,16 @@ NOME_ABA_PAGAMENTOS = os.environ.get("SHEET_NAME_PAGAMENTOS", "pagamentos")
 
 # Valor total do retiro (usado para calcular "pago / parcial / pendente").
 # A planilha de inscrições não guarda esse valor, então ele vem de config.
-VALOR_RETIRO = float(os.environ.get("VALOR_RETIRO"))
+VALOR_RETIRO = float(os.environ.get("VALOR_RETIRO", "100.00"))
+
+# Valor extra cobrado de quem optar por adquirir a camiseta do evento.
+VALOR_CAMISETA = float(os.environ.get("VALOR_CAMISETA", "50.00"))
+
+# Número máximo de inscrições aceitas para esta edição do retiro.
+# Para abrir mais vagas no futuro (ex.: alguém desistiu, ou a coordenação
+# decidiu aumentar o limite), basta mudar essa variável de ambiente e
+# reiniciar o servidor — não precisa alterar o código.
+VAGAS_TOTAL = int(os.environ.get("VAGAS_TOTAL", "80"))
 
 # ══════════════════════════════════════════════════════════════════
 # ÁREA DA COORDENAÇÃO (login/admin)
@@ -230,9 +239,6 @@ CAMPOS_OBRIGATORIOS = [
     ("email", "E-mail"),
     ("data_nascimento", "Data de nascimento"),
 
-    ("modelo_camiseta", "Modelo de camiseta"),
-    ("tamanho_camiseta", "Tamanho de camiseta"),
-
     ("nome_responsavel", "Nome do responsável"),
     ("grau_parentesco", "Grau de parentesco"),
     ("telefone_responsavel", "Telefone do responsável"),
@@ -274,6 +280,16 @@ def validar_formulario(form):
     if email and not EMAIL_REGEX.match(email):
         erros.append("Informe um e-mail válido.")
 
+    # A camiseta agora é opcional: modelo e tamanho só são obrigatórios
+    # para quem marcou o checkbox de aceite da camiseta (+ R$ 50,00).
+    if (form.get("aceite_camiseta") or "").strip() == "sim":
+
+        if not (form.get("modelo_camiseta") or "").strip():
+            erros.append("Selecione o modelo de camiseta.")
+
+        if not (form.get("tamanho_camiseta") or "").strip():
+            erros.append("Selecione o tamanho de camiseta.")
+
     # Campos "extras" condicionais: se marcou "sim", a descrição não pode
     # ficar vazia.
     if (form.get("alergia") or "").strip() == "sim" and not (form.get("descricao_alergia") or "").strip():
@@ -290,6 +306,20 @@ def validar_formulario(form):
         erros.append("Informe se há possibilidade de dar carona para quem necessitar.")
 
     return erros
+
+
+def contar_inscritos(planilha):
+    """
+    Conta quantas inscrições já existem na planilha (linhas com nome
+    preenchido, ignorando o cabeçalho e linhas em branco no meio).
+    """
+
+    linhas = planilha.get_all_values()
+
+    if len(linhas) <= 1:
+        return 0
+
+    return sum(1 for linha in linhas[1:] if linha and linha[0].strip())
 
 
 def row_to_event(row, idx):
@@ -313,7 +343,7 @@ def row_to_event(row, idx):
 # A ordem abaixo tem que bater EXATAMENTE com a ordem das colunas usada
 # em planilha.append_row(...) na rota /enviar, mais a coluna extra
 # "data_inscricao" adicionada ao final (ver comentário lá).
-COLUNAS_INSCRICAO = 27  # 26 campos do formulário + 1 de timestamp
+COLUNAS_INSCRICAO = 29  # 28 campos do formulário + 1 de timestamp
 
 
 def _pagamentos_por_participante():
@@ -387,6 +417,13 @@ def carregar_participantes():
         if not linha[0].strip():
             continue  # linha em branco no meio da planilha
 
+        # Inscrições antigas (feitas antes da camiseta virar opcional) não
+        # têm valor_total gravado; nesse caso, cai no valor cheio do retiro.
+        try:
+            valor_total = float(linha[24]) if linha[24].strip() else VALOR_RETIRO
+        except ValueError:
+            valor_total = VALOR_RETIRO
+
         participante = {
             "id": i,
             "nome": linha[0],
@@ -394,45 +431,46 @@ def carregar_participantes():
             "email": linha[2],
             "data_nascimento": parse_date(linha[3]),
 
-            "modelo_camiseta": linha[4],
-            "tamanho_camiseta": linha[5],
+            "aceite_camiseta": linha[4],
+            "modelo_camiseta": linha[5],
+            "tamanho_camiseta": linha[6],
 
             "responsavel": {
-                "nome": linha[6],
-                "parentesco": linha[7],
-                "telefone": linha[8],
+                "nome": linha[7],
+                "parentesco": linha[8],
+                "telefone": linha[9],
             },
 
-            "retiro_ant": linha[9],
-            "expectativa": linha[10],
-            "chamou_ret": linha[11],
-            "ansiedade": linha[12],
+            "retiro_ant": linha[10],
+            "expectativa": linha[11],
+            "chamou_ret": linha[12],
+            "ansiedade": linha[13],
 
             "saude": {
-                "carne_sex": linha[13],
-                "alergia": linha[14],
-                "descricao_alergia": linha[15],
-                "remedio": linha[16],
-                "nome_medicamento": linha[17],
-                "necessidade": linha[18],
-                "descricao_necessidade": linha[19],
+                "carne_sex": linha[14],
+                "alergia": linha[15],
+                "descricao_alergia": linha[16],
+                "remedio": linha[17],
+                "nome_medicamento": linha[18],
+                "necessidade": linha[19],
+                "descricao_necessidade": linha[20],
             },
 
             "transporte": {
-                "tipo": linha[20],
-                "carona": linha[21] or None,
+                "tipo": linha[21],
+                "carona": linha[22] or None,
             },
 
             "pagamento": {
-                "forma": linha[22],
-                "valor_total": VALOR_RETIRO,
+                "forma": linha[23],
+                "valor_total": valor_total,
                 "historico": pagamentos.get(i, []),
             },
 
-            "direito_de_imag": linha[23],
-            "link_foto": linha[24],
-            "link_cracha": linha[25],
-            "data_inscricao": linha[26] or None,
+            "direito_de_imag": linha[25],
+            "link_foto": linha[26],
+            "link_cracha": linha[27],
+            "data_inscricao": linha[28] or None,
         }
 
         participantes.append(participante)
@@ -493,12 +531,34 @@ def erro_arquivo_grande(e):
 
 @app.route("/")
 def home():
-    return flask.render_template("index.html")
+
+    try:
+        planilha = get_planilha()
+        vagas_esgotadas = contar_inscritos(planilha) >= VAGAS_TOTAL
+    except Exception as exc:
+        # Se não conseguir checar a planilha agora, mostra a home normalmente
+        # (com o botão de inscrição) — a checagem definitiva de qualquer forma
+        # acontece de novo no /formulario e no /enviar.
+        print(f"[AVISO VAGAS] {exc}")
+        vagas_esgotadas = False
+
+    return flask.render_template("index.html", vagas_esgotadas=vagas_esgotadas)
 
 
 @app.route("/formulario")
 def formulario():
-    return flask.render_template("formulario.html")
+
+    try:
+        planilha = get_planilha()
+        vagas_esgotadas = contar_inscritos(planilha) >= VAGAS_TOTAL
+    except Exception as exc:
+        # Se não conseguir checar a planilha agora, deixa o formulário
+        # abrir normalmente — a checagem definitiva acontece de novo
+        # no /enviar antes de gravar a inscrição.
+        print(f"[AVISO VAGAS] {exc}")
+        vagas_esgotadas = False
+
+    return flask.render_template("formulario.html", vagas_esgotadas=vagas_esgotadas)
 
 
 @app.route("/agenda")
@@ -645,6 +705,17 @@ def enviar():
         ), 500
 
     # ══════════════════════════════════════════════════════════════
+    # LIMITE DE VAGAS
+    # Checado aqui, antes de processar foto/crachá, para não gastar
+    # tempo/processamento numa inscrição que não poderá ser aceita.
+    # ══════════════════════════════════════════════════════════════
+    if contar_inscritos(planilha) >= VAGAS_TOTAL:
+        return flask.render_template(
+            "formulario.html",
+            vagas_esgotadas=True
+        ), 400
+
+    # ══════════════════════════════════════════════════════════════
     # DADOS PESSOAIS
     # ══════════════════════════════════════════════════════════════
     nome = flask.request.form.get("nome", "").strip()
@@ -667,6 +738,11 @@ def enviar():
     # ══════════════════════════════════════════════════════════════
     # CAMISETA
     # ══════════════════════════════════════════════════════════════
+    aceite_camiseta = flask.request.form.get(
+        "aceite_camiseta",
+        ""
+    ).strip()  # "sim" quando marcado, "" quando desmarcado
+
     modelo_camiseta = flask.request.form.get(
         "modelo_camiseta",
         ""
@@ -778,6 +854,10 @@ def enviar():
         ""
     ).strip()
 
+    # Valor final da inscrição: soma o adicional da camiseta apenas
+    # para quem marcou o checkbox de aceite.
+    valor_total = VALOR_RETIRO + (VALOR_CAMISETA if aceite_camiseta == "sim" else 0)
+
     # ══════════════════════════════════════════════════════════════
     # FOTO
     # ══════════════════════════════════════════════════════════════
@@ -867,6 +947,7 @@ def enviar():
         email,
         data_nascimento,
 
+        aceite_camiseta,
         modelo_camiseta,
         tamanho_camiseta,
 
@@ -891,6 +972,7 @@ def enviar():
         carona,
 
         forma_pagamento,
+        valor_total,
 
         direito_de_imag,
         link_foto,
@@ -906,7 +988,8 @@ def enviar():
     return flask.render_template(
         "formulario.html",
         sucesso=True,
-        nome=nome
+        nome=nome,
+        valor_total=valor_total
     )
 
 # ══════════════════════════════════════════════════════════════════
