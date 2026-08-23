@@ -1,15 +1,13 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Formulário de Inscrição — Desperta VII</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yeshuapj - Grupo de jovens</title>
   <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet">
 
   <!-- Apple -->
   <link rel="apple-touch-icon" sizes="180x180"
@@ -34,7 +32,9 @@
   <link rel="manifest"
         href="{{ url_for('static', filename='imagens/favicon/site.webmanifest') }}">
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/formulario.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/calendario.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/coordenadores.css') }}">
 
 </head>
 
@@ -42,7 +42,8 @@
 
   <!-- NAV -->
   <nav>
-    <div class="nav-logo"><a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}"></a></div>
+    <div class="nav-logo"><a href="{{ url_for('home') }}"><img
+          src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}"></a></div>
     <button class="nav-menu" aria-label="Abrir menu">
       ☰
     </button>
@@ -66,948 +67,310 @@
     <a href="{{ url_for('home') }}#equipe">Equipe</a>
   </div>
 
-  <!-- FORMULÁRIO -->
+  <!-- HERO -->
+  <section class="hero" id="inicio">
+    <!-- ✅ VÍDEO DE FUNDO: coloque o arquivo video.mp4 na mesma pasta do index.html -->
+    <video class="hero-video" autoplay muted loop playsinline>
+      <source src="{{ url_for('static', filename='imagens/Video-desperta-VI.mp4') }}" type="video/mp4">
+    </video>
+    <div class="hero-overlay"></div>
 
-  <div class="insc-page">
+    <span class="hero-tag">Retiro de Jovens Yeshua</span>
+    <h1 class="hero-title">Des<em>perta</em></h1>
+    <p class="hero-sub">Um chamado para a fé, comunidade e adoração. Vem viver com a gente esse encontro com Cristo.</p>
+    <div class="hero-cta">
+      <a href="#retiro" class="btn-primary">Quero me inscrever</a>
+      <a href="#memorias" class="btn-outline">Algumas de nossas memórias</a>
+    </div>
+    <div class="scroll-hint">Mais informações <br> ↓</div>
+  </section>
 
-    <div class="insc-inner">
+  <!-- SOBRE -->
+  <section class="album-mamorias" id="memorias">
+        <div class="stage">
+        <div class="stage-inner" id="stageInner">
+          <div class="intro-text">
+            <h2 class="intro-title display">Nosso álbum de memórias</h2>
+            <p>Desde 2013, o grupo Yeshua tem sido casa, oração e missão para muitos jovens. Cada ano deixou uma marca — abra o álbum e percorra nossas lembranças.</p>
+            <div class="intro-cta">Toque no álbum para abrir →</div>
+          </div>
+    
+          <div class="cover-wrap">
+            <div class="cover-wrap">
+              <div class="cover" id="coverBtn">
+    
+                <img src="{{ url_for('static', filename='imagens/capa_book.jpeg') }}" alt="Capa do álbum" class="cover-photo">
 
-      <div class="insc-header">
+                <button class="cover-btn" type="button">
+                  <span>👆</span> Aperte para abrir
+                </button>
+    
+              </div>
 
-        <a href="{{ url_for('home') }}">
-          <img class="insc-logo" src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}">
-        </a>
+            </div>
 
-        <span class="insc-tag">Inscrição</span>
+          </div>
+        </div>
+      </div>
+    
+      <div class="book-overlay" id="bookOverlay">
+        <div class="book-header">
+          <button class="close-btn" id="closeBtn" aria-label="Fechar álbum">×</button>
+        </div>
+    
+        <div class="book-stage">
+          <button class="nav-btn" id="prevBtn" aria-label="Página anterior">‹</button>
+          <div class="book" id="book">
+            <div class="page left" id="pageLeft"></div>
+            <div class="page right" id="pageRight"></div>
+            <div class="flip" id="flipEl" style="display:none;">
+              <div class="flip-face front" id="flipFront"></div>
+              <div class="flip-face back" id="flipBack"></div>
+            </div>
+              <div class="book-cover-overlay" id="bookCoverOverlay">
+    
+                <img src="{{ url_for('static', filename='imagens/capa_book.jpeg') }}" alt="Capa do álbum" class="cover-photo">
+                
+              </div>
+    
+          </div>
+          <button class="nav-btn" id="nextBtn" aria-label="Próxima página">›</button>
+        </div>
+    
+        <div class="page-indicator" id="pageIndicator"></div>
+      </div>
+  </section>
 
-        <h1 class="insc-title">
-          Formulário do <em>VII Desperta</em>
-        </h1>
 
+  <!-- RETIRO -->
+
+<section class="retiro">
+    <div class="retiro-wrap">
+        <span class="section-tag">O retiro</span>
+        <h2 class="section-title">Três dias para <em>despertar</em> a alma</h2>
+        <div class="gold-line"></div>
+
+        <p class="retiro-desc">
+            Um tempo separado do barulho do mundo, dedicado a momentos de oração, partilha, louvor e formação. Cada edição do Desperta é uma nova oportunidade de dizer sim a Deus e voltar para casa transformado.
+        </p>
+    </div>
+</section>
+
+  <!-- FOTO GRUPO -->
+  <!-- ✅ FOTO DO GRUPO: coloque o arquivo em imagens/foto-grupo.jpg -->
+  <section class="foto-retiro-area" id="retiro">
+    <div class="foto-glow-box">
+      <img src="{{ url_for('static', filename='imagens/foto-retiro-V_YXPBUm.jpg') }}" alt="Grupo de Jovens Yeshua"
+        class="retiro-photo"
+        onerror="this.style.display='none'; this.parentElement.querySelector('.foto-placeholder').style.display='flex';">
+    </div>
+  </section>
+
+  <section class="retiro" >
+    <div class="retiro-wrap">
+
+      <div class="retiro-meta ">
+        <div class="meta-item">
+          <span class="meta-label">Evento</span>
+          <span class="meta-value">Dias 27, 28 e 29 de Novembro</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Local</span>
+          <span class="meta-value">Recanto Amor Perfeito</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Valor</span>
+          <span class="meta-value">R$ 100,00</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Para quem</span>
+          <span class="meta-value">Jovens 15+</span>
+        </div>
       </div>
 
-      {% if erro %}
-      <div class="insc-erro-servidor" style="background:#fdecea; border:1px solid #f5c2c0; color:#8a2c27; padding:16px 20px; border-radius:8px; margin-bottom:24px; font-family:'Montserrat', sans-serif; font-size:0.95rem;">
-        ⚠️ {{ erro }}
-      </div>
-      {% endif %}
+      <p class="vagas-aviso">Atenção: vagas limitadas — garanta a sua!</p>
 
-      <form
-        id="form-inscricao"
-        action="/enviar"
-        method="POST"
-        enctype="multipart/form-data">
+      <a href="{{ url_for('formulario') }}" class="btn-primary"
+          style="max-width:280px; margin:0 auto;">Inscrever-se agora</a>
+    </div>
+  </section>
 
-        <div id="form-wrap" {% if sucesso %}style="display:none;"{% endif %}>
+  <!-- LOCAL -->
+  <section class="local" id="local">
+    <div class="local-container"> <!-- Novo wrapper para o Flexbox -->
 
-          <!-- DADOS PESSOAIS -->
+      <!-- LADO ESQUERDO: TEXTOS -->
+      <div class="local-content">
+        <span class="section-tag">Onde acontece</span>
+        <h2 class="memorias-intro-title">Recanto <em>Amor Perfeito</em></h2>
+        <div class="gold-line"></div>
 
-          <div class="form-section">
+        <p class="team-intro">
+          Um lugar cercado pela natureza, ideal para o silêncio interior, a oração e os encontros que marcam para
+          sempre. O retiro acontece num espaço acolhedor, preparado com carinho para receber cada jovem.
+        </p>
 
-            <span class="form-section-title">
-              Dados pessoais
-            </span>
-
-            <div class="form-field">
-              <label for="f-nome">Seu nome completo *</label>
-
-              <input
-                type="text"
-                id="f-nome"
-                name="nome"
-                placeholder="Ex: Maria da Silva"
-                required>
-            </div>
-
-            <div class="form-row">
-
-              <div class="form-field">
-                <label for="f-tel">Seu telefone/WhatsApp *</label>
-
-                <input
-                  type="tel"
-                  id="f-tel"
-                  name="telefone"
-                  maxlength="15"
-                  placeholder="(00) 00000-0000"
-                  oninput="mascaraTel(this)"
-                  required>
-              </div>
-
-              <div class="form-field">
-                <label for="f-email">Seu e-mail *</label>
-
-                <input
-                  type="email"
-                  id="f-email"
-                  name="email"
-                  placeholder="seuemail@email.com"
-                  required>
-              </div>
-
-            </div>
-
-            <div class="form-field">
-              <label for="f-nasc">Data de nascimento *</label>
-
-              <input
-                type="text"
-                id="f-nasc"
-                name="data_nascimento"
-                placeholder="dd/mm/aaaa"
-                maxlength="10"
-                inputmode="numeric"
-                oninput="mascaraData(this)"
-                autocomplete="off"
-                required>
-            </div>
-
+        <!-- O card de info agora fica aqui dentro, embaixo do texto -->
+        <div class="local-card">
+          <div class="local-info">
+            <h3>Recanto Amor Perfeito</h3>
+            <p>Região metropolitana de Curitiba — PR</p>
           </div>
-
-          <!-- CAMISETA -->
-
-          <div class="form-section">
-
-            <span class="form-section-title">
-              Camiseta
-            </span>
-
-            <div class="form-field">
-
-              <div class="checkbox-opt">
-
-                <input
-                  type="checkbox"
-                  id="aceite_camiseta"
-                  name="aceite_camiseta"
-                  value="sim"
-                  onchange="toggleCamiseta(this.checked)">
-
-                <label for="aceite_camiseta">
-                  QUERO ADQUIRIR A CAMISETA DO EVENTO.
-                  <span>(OBS: será adicionado um valor de R$ 50,00 ao valor da inscrição)</span>
-                </label>
-
-              </div>
-
-            </div>
-
-            <div class="campo-extra" id="extra-camiseta">
-
-              <div class="form-field">
-
-                <label>Qual modelo de camiseta você prefere? *</label>
-
-                <div class="radio-group">
-
-                  <div class="radio-opt">
-                    <input
-                      type="radio"
-                      id="feminino"
-                      name="modelo_camiseta"
-                      value="feminino">
-
-                    <label for="feminino">Feminino</label>
-                  </div>
-
-                  <div class="radio-opt">
-                    <input
-                      type="radio"
-                      id="masculino"
-                      name="modelo_camiseta"
-                      value="masculino">
-
-                    <label for="masculino">Masculino</label>
-                  </div>
-
-                </div>
-
-              </div>
-
-              <div class="form-field">
-
-                <label for="f-tamanho">Tamanho da camiseta *</label>
-
-                <select id="f-tamanho" name="tamanho_camiseta">
-                  <option value="">Selecione</option>
-                  <option>PP</option>
-                  <option>P</option>
-                  <option>M</option>
-                  <option>G</option>
-                  <option>GG</option>
-                  <option>XG</option>
-                  <option>XXG</option>
-                </select>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <!-- RESPONSÁVEL -->
-
-          <div class="form-section">
-
-            <span class="form-section-title">
-              Responsável ou contato de emergência
-            </span>
-
-            <div class="form-field">
-
-              <label for="f-responsavel">Nome do responsável ou contato de emergência *</label>
-
-              <input
-                type="text"
-                id="f-responsavel"
-                name="nome_responsavel"
-                placeholder="Ex: João da Silva"
-                required>
-
-            </div>
-
-            <div class="form-row">
-
-              <div class="form-field">
-
-                <label for="f-parentesco">Parentesco *</label>
-
-                <select id="f-parentesco" name="grau_parentesco" required>
-                  <option value="">Selecione</option>
-                  <option>Pai</option>
-                  <option>Mãe</option>
-                  <option>Irmão(a)</option>
-                  <option>Tio(a)</option>
-                  <option>Avó/Avô</option>
-                  <option>Responsável legal</option>
-                  <option>Outro</option>
-                </select>
-
-              </div>
-
-              <div class="form-field">
-
-                <label for="f-tel-responsavel">Telefone do responsável ou contato de emergência *</label>
-
-                <input
-                  type="tel"
-                  id="f-tel-responsavel"
-                  name="telefone_responsavel"
-                  placeholder="(00) 00000-0000"
-                  maxlength="15"
-                  oninput="mascaraTel(this)"
-                  required>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <!-- SOBRE VOCÊ -->
-
-          <div class="form-section">
-
-            <span class="form-section-title">
-              Sobre você
-            </span>
-
-            <div class="form-field">
-
-              <label>Já participou de algum retiro? *</label>
-
-              <div class="radio-group">
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="sim"
-                    name="retiro_ant"
-                    value="sim"
-                    required>
-
-                  <label for="sim">✓ Sim</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="nao"
-                    name="retiro_ant"
-                    value="nao"
-                    required>
-
-                  <label for="nao">✗ Não</label>
-                </div>
-
-              </div>
-
-            </div>
-
-            <div class="form-field">
-
-              <label for="f-expectativa">O que espera deste retiro? *</label>
-
-              <textarea
-                id="f-expectativa"
-                name="expectativa"
-                placeholder="Conte um pouco sobre suas expectativas..."
-                required></textarea>
-
-            </div>
-
-            <div class="form-field">
-
-              <label for="f-chamou_ret">Como você ficou sabendo do VII Desperta? *</label>
-
-              <select id="f-chamou_ret" name="chamou_ret" required>
-                <option value="">Selecione</option>
-                <option>Instagram</option>
-                <option>WhatsApp</option>
-                <option>Amigos</option>
-                <option>Família</option>
-                <option>Grupo de jovens</option>
-                <option>Paróquia/Igreja</option>
-                <option>Outro</option>
-              </select>
-
-            </div>
-
-            <div class="form-field">
-
-              <label>Como está a ansiedade para o retiro? *</label>
-
-              <div class="radio-group radio-group-vertical">
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="ansiedade-obrigado"
-                    name="ansiedade"
-                    value="Indo porque me obrigaram"
-                    required>
-
-                  <label for="ansiedade-obrigado">Estou indo porque me obrigaram</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="ansiedade-pouco"
-                    name="ansiedade"
-                    value="Não estou ligando muito">
-
-                  <label for="ansiedade-pouco">Não estou ligando muito para isso</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="ansiedade-animado"
-                    name="ansiedade"
-                    value="Estou esperando muito o retiro">
-
-                  <label for="ansiedade-animado">Estou muito esperando isso desde o início do ano</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="ansiedade-muito_animado"
-                    name="ansiedade"
-                    value="Já estou com a roupa">
-
-                  <label for="ansiedade-muito_animado">Já estou com a roupa separada para ir desde o início do ano!</label>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <!-- SAÚDE -->
-
-          <div class="form-section">
-
-            <span class="form-section-title">
-              Informações de saúde
-            </span>
-
-            <!-- Restrição de carne nas SEXTAS-FEIRAS -->
-
-            <div class="form-field">
-              <label>Você deseja optar por uma alimentação sem carne às sextas-feiras durante o retiro? *</label>
-
-              <div class="radio-group">
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="carne_sex-sim"
-                    name="carne_sex"
-                    value="sim"
-                    required>
-
-                  <label for="carne_sex-sim">✓ Sim</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="carne_sex-nao"
-                    name="carne_sex"
-                    value="nao">
-
-                  <label for="carne_sex-nao">✗ Não</label>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- ALERGIA -->
-
-            <div class="form-field">
-
-              <label>Você possui alguma condição alimentar? (EX: VEGETARIANO/CELÍACO/ALÉRGICO) *</label>
-
-              <div class="radio-group">
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="alergia-sim"
-                    name="alergia"
-                    value="sim"
-                    onchange="toggleExtra('extra-alergia', this.value)"
-                    required>
-
-                  <label for="alergia-sim">✓ Sim</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="alergia-nao"
-                    name="alergia"
-                    value="nao"
-                    onchange="toggleExtra('extra-alergia', this.value)">
-
-                  <label for="alergia-nao">✗ Não</label>
-                </div>
-
-              </div>
-
-              <div class="campo-extra" id="extra-alergia">
-
-                <textarea
-                  id="f-alergia"
-                  name="descricao_alergia"
-                  placeholder="Descreva sua alergia..."></textarea>
-
-              </div>
-
-            </div>
-
-            <!-- REMÉDIO -->
-
-            <div class="form-field">
-
-              <label>Utiliza algum medicamento? *</label>
-
-              <div class="radio-group">
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="remedio-sim"
-                    name="remedio"
-                    value="sim"
-                    onchange="toggleExtra('extra-remedio', this.value)"
-                    required>
-
-                  <label for="remedio-sim">✓ Sim</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="remedio-nao"
-                    name="remedio"
-                    value="nao"
-                    onchange="toggleExtra('extra-remedio', this.value)">
-
-                  <label for="remedio-nao">✗ Não</label>
-                </div>
-
-              </div>
-
-              <div class="campo-extra" id="extra-remedio">
-
-                <textarea
-                  id="f-remedio"
-                  name="nome_medicamento"
-                  placeholder="Informe os medicamentos e qual horario ..."></textarea>
-
-              </div>
-
-            </div>
-
-            <!-- NECESSIDADES ESPECIAIS -->
-
-            <div class="form-field">
-
-              <label>Existe alguma necessidade, limitação ou informação importante que a equipe deva saber para proporcionar uma melhor experiência durante o retiro? *</label>
-
-              <div class="radio-group">
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="necessidade-sim"
-                    name="necessidade"
-                    value="sim"
-                    onchange="toggleExtra('extra-necessidade', this.value)"
-                    required>
-
-                  <label for="necessidade-sim">✓ Sim</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="necessidade-nao"
-                    name="necessidade"
-                    value="nao"
-                    onchange="toggleExtra('extra-necessidade', this.value)">
-
-                  <label for="necessidade-nao">✗ Não</label>
-                </div>
-
-              </div>
-
-              <div class="campo-extra" id="extra-necessidade">
-
-                <textarea
-                  id="f-necessidade"
-                  name="descricao_necessidade"
-                  placeholder="Descreva sua necessidade..."></textarea>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <!-- TRANSPORTE -->
-
-          <div class="form-section">
-
-            <span class="form-section-title">
-              Transporte
-            </span>
-
-            <div class="form-field">
-
-              <label>Como você irá se deslocar até o retiro? *</label>
-
-              <div class="radio-group radio-group-vertical">
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="transporte-responsavel"
-                    name="transporte"
-                    value="Com meu responsável"
-                    onchange="toggleCampo('extra-transporte', true)"
-                    required>
-
-                  <label for="transporte-responsavel">Vou com meu responsável</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="transporte-proprio"
-                    name="transporte"
-                    value="Meu transporte próprio"
-                    onchange="toggleCampo('extra-transporte', true)">
-
-                  <label for="transporte-proprio">Irei com meu próprio meio de transporte</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="transporte-ajuda"
-                    name="transporte"
-                    value="Preciso de ajuda com transporte"
-                    onchange="toggleCampo('extra-transporte', false)">
-
-                  <label for="transporte-ajuda">Preciso de ajuda com transporte</label>
-                </div>
-
-              </div>
-
-              <!-- Só faz sentido perguntar sobre carona a quem tem meio de transporte próprio -->
-              <div class="campo-extra" id="extra-transporte" style="display:none;">
-
-                <label>Existe alguma possibilidade de dar carona para quem necessitar ir até o evento? *</label>
-
-                <div class="radio-group">
-
-                  <div class="radio-opt">
-                    <input
-                      type="radio"
-                      id="carona-sim"
-                      name="carona"
-                      value="sim">
-
-                    <label for="carona-sim">Sim</label>
-                  </div>
-
-                  <div class="radio-opt">
-                    <input
-                      type="radio"
-                      id="carona-nao"
-                      name="carona"
-                      value="nao">
-
-                    <label for="carona-nao">Não</label>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <!-- PAGAMENTO -->
-
-          <div class="form-section">
-
-            <span class="form-section-title">
-              Forma de pagamento
-            </span>
-
-            <div class="form-field">
-
-              <div class="alerta-final">
-                ⚠️ Pagementos via PIX deverão ser realizados para:
-                <br> Rayane Santos
-                <br>Chave PIX : rayychampaoski@gmail.com
-                <br> Envie o comprovante para Rayane Santos via whatsapp no (41) 99239-8995 .
-              </div>
-
-              <label>Como você pretende realizar o pagamento da inscrição? *</label>
-
-              <div class="radio-group radio-group-vertical">
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="pagamento-pix"
-                    name="forma_pagamento"
-                    value="pix"
-                    required>
-
-                  <label for="pagamento-pix">PIX</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="pagamento-dinheiro"
-                    name="forma_pagamento"
-                    value="dinheiro">
-
-                  <label for="pagamento-dinheiro">Dinheiro</label>
-                </div>
-
-                <div class="radio-opt">
-                  <input
-                    type="radio"
-                    id="pagamento-parcelado"
-                    name="forma_pagamento"
-                    value="parcelado">
-
-                  <label for="pagamento-parcelado">Parcelado</label>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <!-- FOTO -->
-
-          <div class="form-section">
-
-            <span class="form-section-title">
-              Foto
-            </span>
-
-            <div class="form-field">
-
-              <div class="checkbox-opt">
-
-                <input
-                  type="checkbox"
-                  id="direito_de_imag"
-                  name="direito_de_imag"
-                  value="sim"
-                  required>
-
-                <label for="direito_de_imag">
-                  AUTORIZO O USO DA MINHA IMAGEM.
-                  <span>(OBS: A foto será utilizada para fins de identificação e divulgação)</span>
-                </label>
-
-              </div>
-
-            </div>
-
-            <div class="upload-area">
-
-              <input
-                type="file"
-                id="f-foto"
-                name="foto_participante"
-                accept="image/*"
-                onchange="previewFoto(this)">
-
-              <div id="upload-prompt">
-
-                <div class="upload-icon">📷</div>
-
-                <p class="upload-text"><strong>Clique para enviar sua foto</strong></p>
-
-                <p class="upload-hint">JPG, PNG ou WEBP</p>
-
-              </div>
-
-            </div>
-
-            <!-- PREVIEW -->
-
-            <div class="foto-preview" id="foto-preview">
-
-              <img id="foto-img" src="" alt="Prévia da foto">
-
-              <span id="foto-nome"></span>
-
-              <button type="button" onclick="removerFoto()">Remover foto</button>
-
-            </div>
-
-          </div>
-
-          <!-- ERRO -->
-
-          <div class="form-erro" id="form-erro"></div>
-
-          <!-- BOTÃO -->
-
-          <div class="alerta-final">
-            ⚠️ Apos o envio deste formulario e a realização do pagamento, envie o comprovante para Rayane Santos via whatsapp no (41) 99239-8995.
-            Sua vaga será confirmada somente após
-            a identificação do pagamento.
-          </div>
-
-          <button
-            type="button"
-            id="btnEnviar"
-            class="btn-submit"
-            onclick="enviarForm()">
-
-            Confirmar inscrição
-
-          </button>
-
         </div>
-        <!-- FECHA form-wrap -->
-
-      </form>
-
-      <!-- SUCESSO -->
-
-      {% if sucesso %}
-
-      <div class="insc-sucesso" id="insc-sucesso" style="display:flex;">
-
-        <div class="sucesso-icon">✓</div>
-
-        <h2>Inscrição recebida com sucesso!</h2>
-
-        <p>Obrigado, <strong>{{ nome }}</strong>!</p>
-
-        <p>Recebemos sua inscrição com sucesso e ela já foi registrada em nosso sistema.</p>
-
-        <p>Agora falta apenas um último passo para confirmar sua participação no <strong>VII Desperta</strong>.</p>
-
-        <!-- STEPS -->
-
-        <div class="sucesso-steps">
-
-          <div class="sucesso-step completo">
-            <div class="sucesso-step-icone">✓</div>
-            <span>Inscrição realizada</span>
-          </div>
-
-          <div class="sucesso-step-linha"></div>
-
-          <div class="sucesso-step pendente">
-            <div class="sucesso-step-icone">💳</div>
-            <span>Realizar pagamento</span>
-          </div>
-
-        </div>
-
-        <div class="pagamento-box">
-
-          <div class="pagamento-titulo">
-            <span class="pagamento-icone">💳</span>
-            Pagamento da inscrição
-          </div>
-
-          <div class="pagamento-grid">
-
-            <div class="pagamento-campo">
-              <span class="pagamento-label">Valor da inscrição</span>
-              <span class="pagamento-valor">R$ {{ "%.2f"|format(valor_total)|replace(".", ",") }}</span>
-            </div>
-
-            <div class="pagamento-campo">
-              <span class="pagamento-label">Chave PIX (E-mail)</span>
-              <span class="pagamento-valor pix">rayychampaoski@gmail.com</span>
-            </div>
-
-          </div>
-
-          <button
-            type="button"
-            class="btn-pix"
-            id="btnPix"
-            onclick="copiarPix()">
-
-            📋 Copiar chave PIX
-
-          </button>
-
-          <div class="pagamento-contato">
-
-            <div class="pagamento-contato-info">
-
-              <div class="pagamento-contato-avatar">
-                <img src="{{ url_for('static', filename='imagens/Ray_coord.png') }}" alt="Foto do responsável">
-              </div>
-
-              <div class="pagamento-contato-texto">
-                <span class="pagamento-label">Enviar comprovante para</span>
-                <strong>Rayane Santos</strong>
-                <span class="pagamento-contato-tel">(41) 99239-8995</span>
-              </div>
-
-            </div>
-
-            <a
-              class="btn-whats-comprovante"
-              href="https://wa.me/554192398995"
-              target="_blank"
-              rel="noopener">
-
-              💬 Chamar no WhatsApp
-
-            </a>
-
-          </div>
-
-        </div>
-
-        <div class="alerta-final">
-
-          <div class="alerta-final-titulo">⚠️ Importante</div>
-
-          <p class="alerta-final-texto">
-            Sua inscrição foi recebida, porém a vaga será confirmada somente após:
-          </p>
-
-          <ul class="alerta-final-lista">
-            <li>realização do pagamento;</li>
-            <li>envio do comprovante para a coordenação;</li>
-            <li>identificação do pagamento pela organização.</li>
-          </ul>
-
-        </div>
-
-        <div class="sucesso-botoes">
-
-          <a href="{{ url_for('home') }}">
-            <button class="btn-submit-home">← Voltar para a página inicial</button>
-          </a>
-
-          <a href="{{ url_for('home') }}#equipe">
-            <button class="btn-submit-equipe">Equipe de coordenação</button>
-          </a>
-
-        </div>
-
       </div>
 
-      {% endif %}
+      <!-- LADO DIREITO: MAPA -->
+      <div class="local-map-wrapper ">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d17958.922565564775!2d-49.16988273447035!3d-25.605801368575396!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94dc59286dcd37c9%3A0x18e4f0d8e930c114!2sRecanto%20Amor%20Perfeito!5e0!3m2!1spt-BR!2sbr!4v1776605577947!5m2!1spt-BR!2sbr"
+          style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- AGENDA -->
+  <section class="agenda" id="agenda">
+    <div class="agenda">
+
+      <div class="eyebrow-row">
+        <div class="line"></div>
+        <div class="label">Reserve a data</div>
+        <div class="line"></div>
+      </div>
+
+      <div class="calender">
+        <div class="hero-dates">
+          <p class="hero-range display" id="heroRange">—</p>
+          <div class="hero-month" id="heroMonth">&nbsp;</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div>
+          <h2 class="agenda-hero-title display" id="heroTitle">Próximos encontros</h2>
+          <p class="hero-desc" id="heroDesc">Toque nos dias em destaque no calendário para conhecer a programação completa do evento.</p>
+        </div>
+      </div>
+
+      <div class="divider-full"></div>
+
+      <div class="cal-head">
+        <h3 class="cal-month display" id="calMonth">&nbsp;</h3>
+        <div class="cal-nav">
+          <button class="cal-nav-btn" id="calPrev" aria-label="Mês anterior">‹</button>
+          <span class="cal-year" id="calYear"></span>
+          <button class="cal-nav-btn" id="calNext" aria-label="Próximo mês">›</button>
+        </div>
+      </div>
+
+      <div class="cal-grid" id="calWeekdays"></div>
+      <div class="cal-grid" id="calDays"></div>
+      <div class="cal-empty-msg" id="calEmptyMsg" style="display:none;">Nenhum evento cadastrado neste mês.</div>
+
+      <div class="legend" id="legend"></div>
 
     </div>
 
-  </div>
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal-card" id="modalCard"></div>
+    </div>
+  </section>
 
-  <script src="{{ url_for('static', filename='js/script_formulario.js') }}"></script>
 
-  <!--
-    Função auxiliar independente do script_formulario.js,
-    usada pelos novos campos condicionais de Transporte e Pagamento.
-    Se preferir, pode mover esse bloco para dentro do script_formulario.js.
-  -->
-  <script>
-    function toggleCampo(id, mostrar) {
-      var el = document.getElementById(id);
-      if (!el) return;
-      el.style.display = mostrar ? 'block' : 'none';
+  <!-- EQUIPE -->
+  <!-- ================= COORDENAÇÃO GERAL ================= -->
+  <section class="team-section" id="equipe">
+    <div class="team-wrap">
 
-      // Limpa seleção dos campos escondidos para não enviar dados inconsistentes
-      if (!mostrar) {
-        el.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(function (input) {
-          input.checked = false;
-        });
-      }
-    }
+      <p class="titulo-sessao">Grupo de Jovens Yeshua</p>
+      <h1 class="intro-title">Conheça nossa equipe</h1>
+      <p class="team-intro">
+        O Yeshua é formado por jovens que colocam seus dons a serviço da evangelização.
+        Estamos aqui para acolher, orientar e caminhar junto com quem deseja conhecer
+        o grupo ou participar do retiro.
+      </p>
 
-    /*
-      Mostra/esconde os campos de modelo e tamanho da camiseta
-      de acordo com o checkbox "Quero adquirir a camiseta".
-      Também limpa a seleção quando o checkbox é desmarcado,
-      para não enviar modelo/tamanho de quem não quer a camiseta.
-    */
-    function toggleCamiseta(mostrar) {
-      var el = document.getElementById('extra-camiseta');
-      if (!el) return;
+      <!-- ================= COORDENAÇÃO GERAL ================= -->
+      <div class="team-group" data-group="coordenacao">
+        <p class="titulo-sessao">Quem organiza</p>
+        <h2 class="intro-title">Coordenação Geral</h2>
+        <p class="team-intro">Os responsáveis pela organização do grupo e do retiro. Deslize para conhecer cada um e fale diretamente pelo WhatsApp.</p>
 
-      if (mostrar) {
-        el.classList.add('visivel');
-      } else {
-        el.classList.remove('visivel');
+        <div class="thumb-row" data-thumbs role="tablist" aria-label="Selecionar coordenador"></div>
 
-        el.querySelectorAll('input[type="radio"]').forEach(function (input) {
-          input.checked = false;
-        });
+        <div class="carousel">
+          <div class="carousel-track" data-track tabindex="0"></div>
+          <div class="carousel-nav">
+            <button class="nav-btn" data-prev aria-label="Ver perfil anterior">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="nav-btn" data-next aria-label="Ver próximo perfil">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
-        var tamanho = document.getElementById('f-tamanho');
-        if (tamanho) tamanho.value = '';
-      }
-    }
-  </script>
+      <!-- ================= SERVOS E EQUIPES ================= -->
+      <div class="team-group" data-group="servos">
+        <p class="titulo-sessao">Quem serve</p>
+        <h2 class="intro-title">Servos e Equipes</h2>
+        <p class="team-intro">Cada equipe carrega uma parte da missão. Deslize para conhecer os servos que constroem o Yeshua no dia a dia.</p>
+
+        <div class="thumb-row" data-thumbs role="tablist" aria-label="Selecionar servo"></div>
+
+        <div class="carousel">
+          <div class="carousel-track" data-track tabindex="0"></div>
+          <div class="carousel-nav">
+            <button class="nav-btn" data-prev aria-label="Ver perfil anterior">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="nav-btn" data-next aria-label="Ver próximo perfil">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">
+      <div class="footer-logo-circle"><a href="#inicio"><img
+            src="{{ url_for('static', filename='imagens/logo_do_grupo.jpeg') }}" alt=""></a></div>
+      <div class="footer-logo-text">
+        <h4>Yeshua</h4>
+        <span>Grupo de Jovens</span>
+      </div>
+    </div>
+
+    <p class="footer-desc">Despertando jovens para o encontro com Cristo através da fé, da comunidade e da adoração.</p>
+
+    <div class="footer-section" style="margin-bottom:1.5rem;">
+      <h5>Acompanhe nossas redes sociais</h5>
+      <a href="https://www.instagram.com/yeshuapj/">@yeshuapj</a>
+      <a href="https://www.instagram.com/paroquiasantaritasjpqss/">@paroquiasantaritasjpqss</a>
+    </div>
+
+    <div class="footer-section">
+      <h5>Paróquia</h5>
+      <p style="font-size:12px; color:var(--text-muted); line-height:1.7;">Os encontros do grupo acontecem a cada quinze dias
+        na nossa paróquia. Venha conhecer e fazer parte dessa família.</p>
+    </div>
+
+    <hr class="footer-divider">
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2026 Grupo de Jovens Yeshua — Desperta VII</p>
+      <p class="footer-verse">"Desperta, ó tu que dormes" — Ef 5,14</p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script_index.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/script_calendario.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/script_coordenadores.js') }}"></script>
 
 </body>
 
