@@ -62,7 +62,11 @@
   const LABEL_STATUS = { pago: "Pagamento confirmado", parcial: "Pagamento parcial", pendente: "Pagamento pendente" };
   const ICONE_STATUS = { pago: "🟢", parcial: "🟡", pendente: "🔴" };
   const LABEL_FORMA = { pix: "PIX", dinheiro: "Dinheiro", parcelado: "Parcelado" };
-  const LABEL_TRANSPORTE = { responsavel: "Vai com o responsável", proprio: "Meio de transporte próprio", ajuda: "Precisa de ajuda com transporte" };
+  const LABEL_TRANSPORTE = {
+    "Com meu responsável": "Vai com o responsável",
+    "Meu transporte próprio": "Meio de transporte próprio",
+    "Preciso de ajuda com transporte": "Precisa de ajuda com transporte"
+  };
 
   /* ═══════════════════════════════════════════════════════════════
      PÁGINA DE LOGIN
@@ -183,7 +187,7 @@
       const pendentes = PARTICIPANTES.filter(p => statusPagamento(p) === "pendente").length;
       const parciais = PARTICIPANTES.filter(p => statusPagamento(p) === "parcial").length;
       const menores = PARTICIPANTES.filter(p => calcularIdade(p.data_nascimento) < 18).length;
-      const precisamAjuda = PARTICIPANTES.filter(p => p.transporte.tipo === "ajuda").length;
+      const precisamAjuda = PARTICIPANTES.filter(p => p.transporte.tipo === "Preciso de ajuda com transporte").length;
 
       const cartoes = [
         { icone: "👥", cor: "gold", valor: total, label: "Inscritos" },
@@ -274,8 +278,8 @@
 
         if (filtroPagamento.value !== "todos" && statusPagamento(p) !== filtroPagamento.value) return false;
 
-        if (filtroTransporte.value === "possui" && !["responsavel", "proprio"].includes(p.transporte.tipo)) return false;
-        if (filtroTransporte.value === "ajuda" && p.transporte.tipo !== "ajuda") return false;
+        if (filtroTransporte.value === "possui" && !["Com meu responsável", "Meu transporte próprio"].includes(p.transporte.tipo)) return false;
+        if (filtroTransporte.value === "ajuda" && p.transporte.tipo !== "Preciso de ajuda com transporte") return false;
         if (filtroTransporte.value === "carona" && p.transporte.carona !== "sim") return false;
 
         return true;
