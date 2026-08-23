@@ -1,4 +1,3 @@
-
 (function () {
 
   /* Preenchido via fetch em carregarParticipantes() — não é mais um
@@ -209,7 +208,12 @@
       const tamanhos = ["PP", "P", "M", "G", "GG", "XG", "XXG"];
       const contagemTamanhos = {};
       tamanhos.forEach(t => contagemTamanhos[t] = 0);
-      PARTICIPANTES.forEach(p => {
+
+      // Só entra na contagem de tamanhos quem realmente aceitou a camiseta
+      // (modelo/tamanho ficam vazios pra quem não marcou o aceite no formulário).
+      const aceitaramCamiseta = PARTICIPANTES.filter(p => p.aceite_camiseta === "sim");
+
+      aceitaramCamiseta.forEach(p => {
         if (contagemTamanhos[p.tamanho_camiseta] !== undefined) contagemTamanhos[p.tamanho_camiseta]++;
       });
       const maiorTamanho = Math.max(1, ...Object.values(contagemTamanhos));
@@ -218,11 +222,14 @@
       const restricao = PARTICIPANTES.filter(p => p.saude.alergia === "sim").length;
       const medicacao = PARTICIPANTES.filter(p => p.saude.remedio === "sim").length;
       const necessidade = PARTICIPANTES.filter(p => p.saude.necessidade === "sim").length;
+      const semCarneSex = PARTICIPANTES.filter(p => p.saude.carne_sex === "sim").length;
 
       const cardTamanhos = `
         <div class="mini-stat-card">
-          <div class="mini-stat-titulo">👕 Tamanhos de camiseta</div>
-          ${tamanhos.filter(t => contagemTamanhos[t] > 0).map(t => `
+          <div class="mini-stat-titulo">👕 Camiseta — ${aceitaramCamiseta.length} de ${PARTICIPANTES.length} aceitaram (+R$ 50)</div>
+          ${aceitaramCamiseta.length === 0
+            ? `<div class="mini-stat-vazio">Ninguém optou pela camiseta ainda.</div>`
+            : tamanhos.filter(t => contagemTamanhos[t] > 0).map(t => `
             <div class="mini-stat-linha">
               <span class="mini-stat-tag">${t}</span>
               <div class="mini-stat-barra"><span style="width:${(contagemTamanhos[t] / maiorTamanho) * 100}%"></span></div>
@@ -241,6 +248,7 @@
 
       miniStatsGrid.innerHTML =
         cardTamanhos +
+        cardSimples("🍽️", "Sem carne às sextas", semCarneSex) +
         cardSimples("🚙", "Disponíveis para carona", carona) +
         cardSimples("⚠️", "Restrição alimentar", restricao) +
         cardSimples("💊", "Uso de medicação", medicacao) +
@@ -256,7 +264,9 @@
       let lista = PARTICIPANTES.filter(p => {
         if (termo && !p.nome.toLowerCase().includes(termo) && !p.telefone.includes(termo)) return false;
 
-        if (filtroCamiseta.value !== "todos" && p.modelo_camiseta !== filtroCamiseta.value) return false;
+        if (filtroCamiseta.value === "nao" && p.aceite_camiseta === "sim") return false;
+        if (["masculino", "feminino"].includes(filtroCamiseta.value) &&
+          (p.aceite_camiseta !== "sim" || p.modelo_camiseta !== filtroCamiseta.value)) return false;
 
         const idade = calcularIdade(p.data_nascimento);
         if (filtroIdade.value === "menor" && idade >= 18) return false;
@@ -419,8 +429,11 @@
         <div class="modal-secao">
           <div class="modal-secao-titulo">👕 Camiseta</div>
           <div class="modal-grid">
+            <div class="modal-campo"><span class="modal-campo-label">Aceitou a camiseta (+R$ 50)</span><span class="modal-campo-valor ${p.aceite_camiseta === "sim" ? "destaque" : ""}">${p.aceite_camiseta === "sim" ? "Sim" : "Não"}</span></div>
+            ${p.aceite_camiseta === "sim" ? `
             <div class="modal-campo"><span class="modal-campo-label">Modelo</span><span class="modal-campo-valor">${p.modelo_camiseta === "feminino" ? "Feminino" : "Masculino"}</span></div>
             <div class="modal-campo"><span class="modal-campo-label">Tamanho</span><span class="modal-campo-valor">${p.tamanho_camiseta}</span></div>
+            ` : ""}
           </div>
         </div>
 
