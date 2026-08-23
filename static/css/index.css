@@ -1008,6 +1008,15 @@ nav {
   color: var(--text);
 }
 
+.vagas-aviso {
+  text-align: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--gold-light);
+  margin: 0 0 1rem;
+}
+
 /* ============================================================
    LOCAL
 ============================================================ */
