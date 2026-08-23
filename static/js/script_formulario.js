@@ -1177,7 +1177,7 @@ async function previewFoto(input) {
 
   function copiarPix() {
 
-    const chavePix = "XXXXXXXXXXXXXXXX"; // Subistituir pela chave pix de quer for receber as inscrições
+    const chavePix = "rayychampaoski@gmail.com"; // Subistituir pela chave pix de quer for receber as inscrições
     
     const botao = document.getElementById("btnPix");
 
