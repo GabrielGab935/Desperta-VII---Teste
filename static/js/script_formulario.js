@@ -981,18 +981,26 @@ async function previewFoto(input) {
       return;
     }
 
-    if (!validarGrupoRadio('modelo_camiseta', 'Selecione o modelo de camiseta.')) {
+    /* Modelo e tamanho da camiseta só são obrigatórios
+       para quem marcou o checkbox de aceite da camiseta */
 
-      return;
-    }
+    const aceiteCamiseta = document.getElementById('aceite_camiseta');
 
-    if (tamanho.value === '') {
+    if (aceiteCamiseta && aceiteCamiseta.checked) {
 
-      tamanho.classList.add('erro');
+      if (!validarGrupoRadio('modelo_camiseta', 'Selecione o modelo de camiseta.')) {
 
-      mostrarErro('Selecione o tamanho da camiseta.');
+        return;
+      }
 
-      return;
+      if (tamanho.value === '') {
+
+        tamanho.classList.add('erro');
+
+        mostrarErro('Selecione o tamanho da camiseta.');
+
+        return;
+      }
     }
 
     if (responsavel.value.trim() === '') {
@@ -1175,13 +1183,59 @@ async function previewFoto(input) {
     });
   }
 
+  /*
+    Copia texto para a área de transferência mesmo quando
+    navigator.clipboard não está disponível (sites servidos sem HTTPS,
+    ou navegadores internos de apps como Instagram/Facebook, que
+    bloqueiam essa API). Nesses casos, cai no método antigo com
+    um <textarea> temporário + document.execCommand('copy').
+  */
+  function copiarTexto(texto) {
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(texto);
+    }
+
+    return new Promise((resolve, reject) => {
+
+      try {
+
+        const textarea = document.createElement('textarea');
+        textarea.value = texto;
+
+        // Evita rolar a página ou aparecer visualmente na tela
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-9999px';
+        textarea.style.left = '-9999px';
+
+        document.body.appendChild(textarea);
+
+        textarea.focus();
+        textarea.select();
+
+        const copiado = document.execCommand('copy');
+
+        document.body.removeChild(textarea);
+
+        if (copiado) {
+          resolve();
+        } else {
+          reject(new Error('document.execCommand("copy") retornou false.'));
+        }
+
+      } catch (erro) {
+        reject(erro);
+      }
+    });
+  }
+
   function copiarPix() {
 
     const chavePix = "rayychampaoski@gmail.com"; // Subistituir pela chave pix de quer for receber as inscrições
     
     const botao = document.getElementById("btnPix");
 
-    navigator.clipboard.writeText(chavePix)
+    copiarTexto(chavePix)
         .then(() => {
 
             botao.innerHTML = "✅ Chave PIX copiada!";
