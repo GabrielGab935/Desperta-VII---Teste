@@ -310,8 +310,9 @@ def validar_formulario(form):
 
 def contar_inscritos(planilha):
     """
-    Conta quantas inscrições já existem na planilha (linhas com nome
-    preenchido, ignorando o cabeçalho e linhas em branco no meio).
+    Conta somente as inscrições válidas.
+    Inscrições com status 'DUPLICADA' ou 'CANCELADA'
+    não ocupam uma vaga.
     """
 
     linhas = planilha.get_all_values()
@@ -319,7 +320,25 @@ def contar_inscritos(planilha):
     if len(linhas) <= 1:
         return 0
 
-    return sum(1 for linha in linhas[1:] if linha and linha[0].strip())
+    total = 0
+
+    for linha in linhas[1:]:
+        # Ignora linhas sem nome
+        if not linha or not linha[0].strip():
+            continue
+
+        # Status está na coluna 30.
+        # Como Python começa contando do zero, o índice é 29.
+        #
+        # Se a inscrição for antiga e ainda não tiver Status,
+        # ela será considerada ATIVA.
+        status = linha[29].strip().upper() if len(linha) > 29 else "ATIVA"
+
+        # Não conta duplicadas nem canceladas
+        if status not in ("DUPLICADA", "CANCELADA"):
+            total += 1
+
+    return total
 
 
 def row_to_event(row, idx):
@@ -409,16 +428,36 @@ def carregar_participantes():
     # linhas[0] é o cabeçalho; a linha real i (2, 3, 4...) vira o "id"
     for i, linha in enumerate(linhas[1:], start=2):
 
-        # Protege contra linhas mais curtas (ex.: inscrições antigas
-        # feitas antes de alguma coluna nova ser adicionada)
+        # Protege contra linhas mais curtas
         if len(linha) < COLUNAS_INSCRICAO:
             linha = linha + [""] * (COLUNAS_INSCRICAO - len(linha))
 
         if not linha[0].strip():
             continue  # linha em branco no meio da planilha
 
-        # Inscrições antigas (feitas antes da camiseta virar opcional) não
-        # têm valor_total gravado; nesse caso, cai no valor cheio do retiro.
+        # =========================================================
+        # VERIFICA O STATUS DA INSCRIÇÃO
+        # =========================================================
+
+        # Status está na coluna 30 da planilha
+        # Como o Python começa no índice 0, usamos linha[29].
+        #
+        # Inscrições antigas que ainda não possuem Status
+        # serão consideradas ATIVAS.
+        status = linha[29].strip().upper() if len(linha) > 29 else "ATIVA"
+
+        # Não mostrar inscrições duplicadas ou canceladas
+        # na dashboard.
+        if status in ("DUPLICADA", "CANCELADA"):
+            continue
+
+        # =========================================================
+        # VALOR TOTAL
+        # =========================================================
+
+        # Inscrições antigas (feitas antes da camiseta virar opcional)
+        # não têm valor_total gravado; nesse caso, cai no valor cheio
+        # do retiro.
         try:
             valor_total = float(linha[24]) if linha[24].strip() else VALOR_RETIRO
         except ValueError:
@@ -978,7 +1017,9 @@ def enviar():
         link_foto,
         link_cracha,
 
-        data_hora_inscricao
+        data_hora_inscricao,
+
+        "ATIVA"
 
     ], value_input_option="USER_ENTERED")
 
