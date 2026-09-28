@@ -22,14 +22,6 @@
         whatsapp: "554188964460"
       },
       {
-        name: "Marllon Setim",
-        role: "Coordenador",
-        quote: "“Cada um dê conforme decidiu em seu coração, não com pesar ou por obrigação.”",
-        source: "— 2Cor 9,7",
-        photo: "../static/imagens/marlon_coor.PNG",
-        whatsapp: "554191044959"
-      },
-      {
         name: "Rayane Santos",
         role: "Coordenadora",
         quote: "“A santidade não consiste em fazer coisas extraordinárias, mas em fazer bem as coisas pequenas.”",
