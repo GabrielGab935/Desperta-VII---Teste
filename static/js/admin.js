@@ -68,6 +68,25 @@
     "Preciso de ajuda com transporte": "Precisa de ajuda com transporte"
   };
 
+  /* Cada participante cai em UMA categoria só, para os números fecharem:
+       "ajuda"  → precisa de ajuda com transporte
+       "carona" → marcou "Sim" em oferecer carona (vá com o responsável OU por conta própria)
+       "possui" → vai com o responsável ou por conta própria e NÃO oferece carona
+     possui + carona + ajuda = total de inscritos. */
+  function categoriaTransporte(p) {
+    const tipo = p.transporte.tipo;
+
+    if (tipo === "Preciso de ajuda com transporte") return "ajuda";
+
+    const temTransporte = tipo === "Com meu responsável" || tipo === "Meu transporte próprio";
+
+    if (temTransporte && p.transporte.carona === "sim") return "carona";
+
+    if (temTransporte) return "possui";
+
+    return "outro"; // vazio/desconhecido (ex.: inscrição antiga)
+  }
+
   /* ═══════════════════════════════════════════════════════════════
      PÁGINA DE LOGIN
   ═══════════════════════════════════════════════════════════════ */
@@ -166,6 +185,65 @@
     const modalBox = document.getElementById("modal-box");
     const btnSair = document.getElementById("btn-sair");
 
+    /* ── FILTROS RÁPIDOS (cliques nos cards do topo) ──
+       Os cards de pagamento / idade / transporte reaproveitam os <select>
+       que já existem. Os de saúde e camiseta usam o "filtroExtra" abaixo
+       (um por vez; clicar de novo no mesmo card remove o filtro). */
+
+    const SELECTS_POR_TIPO = {
+      pagamento: filtroPagamento,
+      idade: filtroIdade,
+      transporte: filtroTransporte,
+    };
+
+    const FILTROS_EXTRA = {
+      carne_sex:    { label: "Sem carne às sextas",    testa: p => p.saude.carne_sex === "sim" },
+      alergia:      { label: "Restrição alimentar",    testa: p => p.saude.alergia === "sim" },
+      remedio:      { label: "Uso de medicação",       testa: p => p.saude.remedio === "sim" },
+      necessidade:  { label: "Necessidades especiais", testa: p => p.saude.necessidade === "sim" },
+      camiseta_sim: { label: "Aceitaram a camiseta",   testa: p => p.aceite_camiseta === "sim" },
+    };
+
+    let filtroExtra = null;
+
+    function definicaoFiltroExtra(chave) {
+      if (!chave) return null;
+
+      if (chave.startsWith("tamanho:")) {
+        const tamanho = chave.split(":")[1];
+        return {
+          label: `Camiseta tamanho ${tamanho}`,
+          testa: p => p.aceite_camiseta === "sim" && p.tamanho_camiseta === tamanho,
+        };
+      }
+
+      return FILTROS_EXTRA[chave] || null;
+    }
+
+    // Estilos dos cards clicáveis (podem ser movidos para o admin.css se preferir)
+    const estiloCardsClicaveis = document.createElement("style");
+    estiloCardsClicaveis.textContent = `
+      [data-filtro-tipo] { cursor: pointer; }
+      .stat-card[data-filtro-tipo], .mini-stat-card[data-filtro-tipo] {
+        transition: transform .15s ease, box-shadow .15s ease, outline-color .15s ease;
+      }
+      .stat-card[data-filtro-tipo]:hover, .mini-stat-card[data-filtro-tipo]:hover { transform: translateY(-2px); }
+      .stat-card.ativo, .mini-stat-card.ativo { outline: 2px solid var(--gold, #c9a869); outline-offset: 2px; }
+      .mini-stat-linha[data-filtro-tipo] { border-radius: 6px; transition: background .15s ease; }
+      .mini-stat-linha[data-filtro-tipo]:hover { background: rgba(201, 168, 105, .12); }
+      .mini-stat-linha.ativo { background: rgba(201, 168, 105, .25); }
+      .filtro-extra-tag {
+        display: inline-flex; align-items: center; gap: .4rem; margin-left: .6rem;
+        padding: .15rem .6rem; border-radius: 999px;
+        background: rgba(201, 168, 105, .2); border: 1px solid var(--gold, #c9a869);
+        font-size: .8rem;
+      }
+      .filtro-extra-tag button {
+        background: none; border: none; color: inherit; cursor: pointer; font-size: .85rem; padding: 0;
+      }
+    `;
+    document.head.appendChild(estiloCardsClicaveis);
+
     /* ── SAIR ── */
 
     btnSair.addEventListener("click", async function () {
@@ -187,19 +265,19 @@
       const pendentes = PARTICIPANTES.filter(p => statusPagamento(p) === "pendente").length;
       const parciais = PARTICIPANTES.filter(p => statusPagamento(p) === "parcial").length;
       const menores = PARTICIPANTES.filter(p => calcularIdade(p.data_nascimento) < 18).length;
-      const precisamAjuda = PARTICIPANTES.filter(p => p.transporte.tipo === "Preciso de ajuda com transporte").length;
+      const precisamAjuda = PARTICIPANTES.filter(p => categoriaTransporte(p) === "ajuda").length;
 
       const cartoes = [
-        { icone: "👥", cor: "gold", valor: total, label: "Inscritos" },
-        { icone: "🟢", cor: "green", valor: pagos, label: "Pagos" },
-        { icone: "🔴", cor: "red", valor: pendentes, label: "Pendentes" },
-        { icone: "🟡", cor: "amber", valor: parciais, label: "Parciais" },
-        { icone: "👦", cor: "blue", valor: menores, label: "Menores" },
-        { icone: "🚗", cor: "gold", valor: precisamAjuda, label: "Precisam ajuda" },
+        { icone: "👥", cor: "gold", valor: total, label: "Inscritos", filtro: ["limpar", ""] },
+        { icone: "🟢", cor: "green", valor: pagos, label: "Pagos", filtro: ["pagamento", "pago"] },
+        { icone: "🔴", cor: "red", valor: pendentes, label: "Pendentes", filtro: ["pagamento", "pendente"] },
+        { icone: "🟡", cor: "amber", valor: parciais, label: "Parciais", filtro: ["pagamento", "parcial"] },
+        { icone: "👦", cor: "blue", valor: menores, label: "Menores", filtro: ["idade", "menor"] },
+        { icone: "🚗", cor: "gold", valor: precisamAjuda, label: "Precisam ajuda", filtro: ["transporte", "ajuda"] },
       ];
 
       statsGrid.innerHTML = cartoes.map(c => `
-        <div class="stat-card">
+        <div class="stat-card" data-filtro-tipo="${c.filtro[0]}" data-filtro-valor="${c.filtro[1]}" role="button" tabindex="0" title="Clique para filtrar a lista">
           <div class="stat-icone ${c.cor}">${c.icone}</div>
           <div class="stat-valor">${c.valor}</div>
           <div class="stat-label">${c.label}</div>
@@ -222,19 +300,20 @@
       });
       const maiorTamanho = Math.max(1, ...Object.values(contagemTamanhos));
 
-      const carona = PARTICIPANTES.filter(p => p.transporte.carona === "sim").length;
+      const carona = PARTICIPANTES.filter(p => categoriaTransporte(p) === "carona").length;
+      const comTransporte = PARTICIPANTES.filter(p => categoriaTransporte(p) === "possui").length;
       const restricao = PARTICIPANTES.filter(p => p.saude.alergia === "sim").length;
       const medicacao = PARTICIPANTES.filter(p => p.saude.remedio === "sim").length;
       const necessidade = PARTICIPANTES.filter(p => p.saude.necessidade === "sim").length;
       const semCarneSex = PARTICIPANTES.filter(p => p.saude.carne_sex === "sim").length;
 
       const cardTamanhos = `
-        <div class="mini-stat-card">
+        <div class="mini-stat-card" data-filtro-tipo="extra" data-filtro-valor="camiseta_sim" role="button" tabindex="0" title="Clique para filtrar quem aceitou a camiseta">
           <div class="mini-stat-titulo">👕 Camiseta — ${aceitaramCamiseta.length} de ${PARTICIPANTES.length} aceitaram (+R$ 50)</div>
           ${aceitaramCamiseta.length === 0
             ? `<div class="mini-stat-vazio">Ninguém optou pela camiseta ainda.</div>`
             : tamanhos.filter(t => contagemTamanhos[t] > 0).map(t => `
-            <div class="mini-stat-linha">
+            <div class="mini-stat-linha" data-filtro-tipo="extra" data-filtro-valor="tamanho:${t}" role="button" tabindex="0" title="Filtrar tamanho ${t}">
               <span class="mini-stat-tag">${t}</span>
               <div class="mini-stat-barra"><span style="width:${(contagemTamanhos[t] / maiorTamanho) * 100}%"></span></div>
               <span class="mini-stat-num">${contagemTamanhos[t]}</span>
@@ -243,8 +322,8 @@
         </div>
       `;
 
-      const cardSimples = (icone, titulo, valor) => `
-        <div class="mini-stat-card">
+      const cardSimples = (icone, titulo, valor, tipo, valorFiltro) => `
+        <div class="mini-stat-card" data-filtro-tipo="${tipo}" data-filtro-valor="${valorFiltro}" role="button" tabindex="0" title="Clique para filtrar a lista">
           <div class="mini-stat-titulo">${icone} ${titulo}</div>
           <div class="stat-valor" style="font-size:1.6rem;">${valor}</div>
         </div>
@@ -252,11 +331,12 @@
 
       miniStatsGrid.innerHTML =
         cardTamanhos +
-        cardSimples("🍽️", "Sem carne às sextas", semCarneSex) +
-        cardSimples("🚙", "Disponíveis para carona", carona) +
-        cardSimples("⚠️", "Restrição alimentar", restricao) +
-        cardSimples("💊", "Uso de medicação", medicacao) +
-        cardSimples("❗", "Necessidades especiais", necessidade);
+        cardSimples("🍽️", "Sem carne às sextas", semCarneSex, "extra", "carne_sex") +
+        cardSimples("🚗", "Com transporte (sem carona)", comTransporte, "transporte", "possui") +
+        cardSimples("🚙", "Disponíveis para carona", carona, "transporte", "carona") +
+        cardSimples("⚠️", "Restrição alimentar", restricao, "extra", "alergia") +
+        cardSimples("💊", "Uso de medicação", medicacao, "extra", "remedio") +
+        cardSimples("❗", "Necessidades especiais", necessidade, "extra", "necessidade");
     }
 
     /* ── FILTROS + LISTA ── */
@@ -278,9 +358,10 @@
 
         if (filtroPagamento.value !== "todos" && statusPagamento(p) !== filtroPagamento.value) return false;
 
-        if (filtroTransporte.value === "possui" && !["Com meu responsável", "Meu transporte próprio"].includes(p.transporte.tipo)) return false;
-        if (filtroTransporte.value === "ajuda" && p.transporte.tipo !== "Preciso de ajuda com transporte") return false;
-        if (filtroTransporte.value === "carona" && p.transporte.carona !== "sim") return false;
+        if (filtroTransporte.value !== "todos" && categoriaTransporte(p) !== filtroTransporte.value) return false;
+
+        const extra = definicaoFiltroExtra(filtroExtra);
+        if (extra && !extra.testa(p)) return false;
 
         return true;
       });
@@ -306,7 +387,14 @@
 
       const lista = participantesFiltrados();
 
-      filtrosResultado.innerHTML = `<strong>${lista.length}</strong> de ${PARTICIPANTES.length} participantes`;
+      const extra = definicaoFiltroExtra(filtroExtra);
+
+      filtrosResultado.innerHTML = `<strong>${lista.length}</strong> de ${PARTICIPANTES.length} participantes` +
+        (extra
+          ? `<span class="filtro-extra-tag">${extra.label} <button type="button" id="btn-limpar-extra" aria-label="Remover filtro">✕</button></span>`
+          : "");
+
+      atualizarCardsAtivos();
 
       if (lista.length === 0) {
         gridParticipantes.innerHTML = `<div class="sem-resultado">Nenhum participante encontrado com esses filtros.</div>`;
@@ -339,6 +427,73 @@
 
     [campoBusca, filtroOrdenacao, filtroCamiseta, filtroIdade, filtroPagamento, filtroTransporte]
       .forEach(el => el.addEventListener("input", renderCards));
+
+    /* ── CARDS DO TOPO COMO FILTROS ── */
+
+    function atualizarCardsAtivos() {
+      document.querySelectorAll("[data-filtro-tipo]").forEach(el => {
+        const tipo = el.dataset.filtroTipo;
+        const valor = el.dataset.filtroValor;
+
+        let ativo = false;
+
+        if (tipo === "extra") ativo = filtroExtra === valor;
+        else if (SELECTS_POR_TIPO[tipo]) ativo = SELECTS_POR_TIPO[tipo].value === valor;
+
+        el.classList.toggle("ativo", ativo);
+        el.setAttribute("aria-pressed", ativo ? "true" : "false");
+      });
+    }
+
+    function aplicarFiltroDoCard(tipo, valor) {
+
+      if (tipo === "limpar") {
+        // Card "Inscritos": volta tudo ao normal (mantém só a ordenação escolhida)
+        campoBusca.value = "";
+        filtroCamiseta.value = "todos";
+        filtroIdade.value = "todos";
+        filtroPagamento.value = "todos";
+        filtroTransporte.value = "todos";
+        filtroExtra = null;
+
+      } else if (tipo === "extra") {
+        filtroExtra = filtroExtra === valor ? null : valor;
+
+      } else if (SELECTS_POR_TIPO[tipo]) {
+        const select = SELECTS_POR_TIPO[tipo];
+        select.value = select.value === valor ? "todos" : valor;
+      }
+
+      renderCards();
+
+      document.querySelector(".filtros-bar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function tratarCliqueNoCard(evento) {
+      const alvo = evento.target.closest("[data-filtro-tipo]");
+      if (!alvo) return;
+      aplicarFiltroDoCard(alvo.dataset.filtroTipo, alvo.dataset.filtroValor);
+    }
+
+    function tratarTecladoNoCard(evento) {
+      if (evento.key !== "Enter" && evento.key !== " ") return;
+      const alvo = evento.target.closest("[data-filtro-tipo]");
+      if (!alvo) return;
+      evento.preventDefault();
+      aplicarFiltroDoCard(alvo.dataset.filtroTipo, alvo.dataset.filtroValor);
+    }
+
+    [statsGrid, miniStatsGrid].forEach(grid => {
+      grid.addEventListener("click", tratarCliqueNoCard);
+      grid.addEventListener("keydown", tratarTecladoNoCard);
+    });
+
+    filtrosResultado.addEventListener("click", function (evento) {
+      if (evento.target.closest("#btn-limpar-extra")) {
+        filtroExtra = null;
+        renderCards();
+      }
+    });
 
     /* ── CARREGAMENTO DOS DADOS (planilha real, via Flask) ── */
 
