@@ -12,6 +12,8 @@
     rel="stylesheet">
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+  <!-- OU: cole o conteúdo de admin_extras.css no final do admin.css e apague esta linha -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_extras.css') }}">
 </head>
 
 <body>
@@ -31,113 +33,198 @@
 
   </header>
 
-  <div class="admin-page">
+  <div class="admin-layout">
 
-    <!-- RESUMO GERAL -->
-    <span class="admin-section-title">Resumo geral</span>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <span class="sidebar-titulo">Menu</span>
+      <nav>
+        <a href="#inscritos" class="sidebar-link ativo" data-view="inscritos"><span>👥</span> Inscritos</a>
+        <a href="#edicao" class="sidebar-link" data-view="edicao"><span>✏️</span> Editar dados</a>
+        <a href="#cracha" class="sidebar-link" data-view="cracha"><span>🪪</span> Crachá avulso</a>
+      </nav>
+    </aside>
 
-    <div class="stats-grid" id="stats-grid">
-      <!-- preenchido via JS -->
+    <div class="admin-content">
+
+      <!-- ═════════ VIEW 1: INSCRITOS (conteúdo original) ═════════ -->
+      <section class="view" id="view-inscritos">
+        <div class="admin-page">
+
+          <span class="admin-section-title">Resumo geral</span>
+
+          <div class="stats-grid" id="stats-grid"></div>
+
+          <div class="mini-stats-grid" id="mini-stats-grid" style="margin-top:1rem;"></div>
+
+          <span class="admin-section-title">Participantes</span>
+
+          <div class="filtros-bar">
+
+            <div class="busca-field">
+              <input type="text" id="busca" placeholder="Pesquisar por nome ou telefone...">
+            </div>
+
+            <div class="filtros-grid">
+
+              <div class="filtro-field">
+                <label for="filtro-ordenacao">Ordenação</label>
+                <select id="filtro-ordenacao">
+                  <option value="recentes">Últimos inscritos</option>
+                  <option value="antigos">Primeiros inscritos</option>
+                  <option value="az">Nome de A a Z</option>
+                  <option value="za">Nome de Z a A</option>
+                  <option value="mais_novos">Mais novos</option>
+                  <option value="mais_velhos">Mais velhos</option>
+                </select>
+              </div>
+
+              <div class="filtro-field">
+                <label for="filtro-camiseta">Camiseta</label>
+                <select id="filtro-camiseta">
+                  <option value="todos">Todos</option>
+                  <option value="masculino">Modelo masculino</option>
+                  <option value="feminino">Modelo feminino</option>
+                  <option value="nao">Não quis camiseta</option>
+                </select>
+              </div>
+
+              <div class="filtro-field">
+                <label for="filtro-idade">Faixa etária</label>
+                <select id="filtro-idade">
+                  <option value="todos">Todos</option>
+                  <option value="menor">Menores de idade</option>
+                  <option value="maior">Maiores de idade</option>
+                </select>
+              </div>
+
+              <div class="filtro-field">
+                <label for="filtro-pagamento">Pagamento</label>
+                <select id="filtro-pagamento">
+                  <option value="todos">Todos</option>
+                  <option value="pago">Pagamento confirmado</option>
+                  <option value="parcial">Pagamento parcial</option>
+                  <option value="pendente">Pagamento pendente</option>
+                </select>
+              </div>
+
+              <div class="filtro-field">
+                <label for="filtro-transporte">Transporte</label>
+                <select id="filtro-transporte">
+                  <option value="todos">Todos</option>
+                  <option value="possui">Possui transporte</option>
+                  <option value="ajuda">Precisa de ajuda</option>
+                  <option value="carona">Disponível para oferecer carona</option>
+                </select>
+              </div>
+
+            </div>
+
+            <div class="filtros-resultado" id="filtros-resultado"></div>
+
+          </div>
+
+          <div class="participantes-grid" id="participantes-grid" style="margin-top:1.5rem;"></div>
+
+        </div>
+      </section>
+
+      <!-- ═════════ VIEW 2: EDIÇÃO DE DADOS ═════════ -->
+      <section class="view" id="view-edicao" hidden>
+        <div class="admin-page">
+
+          <span class="admin-section-title">Editar dados dos inscritos</span>
+
+          <div class="filtros-bar">
+            <div class="busca-field">
+              <input type="text" id="ed-busca" placeholder="Pesquisar por nome, telefone ou e-mail...">
+            </div>
+
+            <div class="filtros-grid" style="grid-template-columns: 220px;">
+              <div class="filtro-field">
+                <label for="ed-filtro-status">Situação</label>
+                <select id="ed-filtro-status">
+                  <option value="todos">Todas</option>
+                  <option value="ATIVA">Ativas</option>
+                  <option value="CANCELADA">Canceladas</option>
+                  <option value="DUPLICADA">Duplicadas</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="filtros-resultado" id="ed-resultado"></div>
+          </div>
+
+          <div class="edit-lista" id="ed-lista"></div>
+
+        </div>
+      </section>
+
+      <!-- ═════════ VIEW 3: CRACHÁ AVULSO ═════════ -->
+      <section class="view" id="view-cracha" hidden>
+        <div class="admin-page">
+
+          <span class="admin-section-title">Crachá avulso (músicos, pregadores, convidados)</span>
+
+          <div class="cracha-layout">
+
+            <div class="cracha-form">
+
+              <div class="filtro-field">
+                <label for="cr-nome">Nome no crachá</label>
+                <input type="text" id="cr-nome" class="campo-texto" maxlength="60" placeholder="Ex.: João da Silva" autocomplete="off">
+              </div>
+
+              <div class="filtro-field">
+                <label for="cr-foto">Foto</label>
+                <input type="file" id="cr-foto" class="campo-arquivo" accept="image/*,.heic,.heif">
+              </div>
+
+              <div class="cracha-msg" id="cr-msg">Preencha o nome e escolha uma foto para ver a prévia.</div>
+
+              <div class="cracha-botoes">
+                <button type="button" class="btn-ver-mais" id="cr-atualizar">Atualizar prévia</button>
+                <a class="btn-add-pagamento btn-download" id="cr-download" aria-disabled="true">⬇ Baixar PNG</a>
+              </div>
+
+            </div>
+
+            <div class="cracha-preview" id="cr-preview">
+              <span class="cracha-vazio">Prévia do crachá</span>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
     </div>
-
-    <div class="mini-stats-grid" id="mini-stats-grid" style="margin-top:1rem;">
-      <!-- preenchido via JS -->
-    </div>
-
-    <!-- BUSCA E FILTROS -->
-    <span class="admin-section-title">Participantes</span>
-
-    <div class="filtros-bar">
-
-      <div class="busca-field">
-        <input type="text" id="busca" placeholder="Pesquisar por nome ou telefone...">
-      </div>
-
-      <div class="filtros-grid">
-
-        <div class="filtro-field">
-          <label for="filtro-ordenacao">Ordenação</label>
-          <select id="filtro-ordenacao">
-            <option value="recentes">Últimos inscritos</option>
-            <option value="antigos">Primeiros inscritos</option>
-            <option value="az">Nome de A a Z</option>
-            <option value="za">Nome de Z a A</option>
-            <option value="mais_novos">Mais novos</option>
-            <option value="mais_velhos">Mais velhos</option>
-          </select>
-        </div>
-
-        <div class="filtro-field">
-          <label for="filtro-camiseta">Camiseta</label>
-          <select id="filtro-camiseta">
-            <option value="todos">Todos</option>
-            <option value="masculino">Modelo masculino</option>
-            <option value="feminino">Modelo feminino</option>
-            <option value="nao">Não quis camiseta</option>
-          </select>
-        </div>
-
-        <div class="filtro-field">
-          <label for="filtro-idade">Faixa etária</label>
-          <select id="filtro-idade">
-            <option value="todos">Todos</option>
-            <option value="menor">Menores de idade</option>
-            <option value="maior">Maiores de idade</option>
-          </select>
-        </div>
-
-        <div class="filtro-field">
-          <label for="filtro-pagamento">Pagamento</label>
-          <select id="filtro-pagamento">
-            <option value="todos">Todos</option>
-            <option value="pago">Pagamento confirmado</option>
-            <option value="parcial">Pagamento parcial</option>
-            <option value="pendente">Pagamento pendente</option>
-          </select>
-        </div>
-
-        <div class="filtro-field">
-          <label for="filtro-transporte">Transporte</label>
-          <select id="filtro-transporte">
-            <option value="todos">Todos</option>
-            <option value="possui">Possui transporte</option>
-            <option value="ajuda">Precisa de ajuda</option>
-            <option value="carona">Disponível para oferecer carona</option>
-          </select>
-        </div>
-
-      </div>
-
-      <div class="filtros-resultado" id="filtros-resultado"></div>
-
-    </div>
-
-    <!-- GRID DE PARTICIPANTES -->
-    <div class="participantes-grid" id="participantes-grid" style="margin-top:1.5rem;">
-      <!-- preenchido via JS -->
-    </div>
-
   </div>
 
-  <!-- MODAL DE DETALHES -->
+  <!-- MODAL DE DETALHES (view inscritos) -->
   <div class="modal-overlay" id="modal-overlay">
-    <div class="modal-box" id="modal-box">
-      <!-- preenchido via JS -->
-    </div>
+    <div class="modal-box" id="modal-box"></div>
   </div>
+
+  <!-- MODAL DE EDIÇÃO -->
+  <div class="modal-overlay" id="edit-overlay">
+    <div class="modal-box" id="edit-box"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
 
   <script>
-    // URLs geradas pelo Flask (Jinja não processa arquivos estáticos .js,
-    // por isso passamos os links renderizados aqui antes de carregar o admin.js)
     window.ADMIN_URLS = {
       login_page: "{{ url_for('admin_login_page') }}",
       login: "{{ url_for('admin_login') }}",
       logout: "{{ url_for('admin_logout') }}",
       dashboard: "{{ url_for('admin_dashboard') }}",
-      api_participantes: "{{ url_for('admin_api_participantes') }}"
+      api_participantes: "{{ url_for('admin_api_participantes') }}",
+      api_cracha: "{{ url_for('admin_api_cracha') }}"
     };
   </script>
   <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin_extras.js') }}"></script>
 
 </body>
 
