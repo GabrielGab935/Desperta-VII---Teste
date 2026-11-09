@@ -32,7 +32,7 @@ def gerar_cracha(nome, foto_file):
     # FOTO CIRCULAR
     # ==================================================
 
-    diametro = 254
+    diametro = 380
 
     foto = ImageOps.fit(
         foto,
@@ -61,10 +61,10 @@ def gerar_cracha(nome, foto_file):
     # AJUSTE FINO AQUI SE NECESSÁRIO
 
     # Valor muito baixo foto para esquerda, valor muito alto foto para direita
-    centro_x = 632
+    centro_x = 510
 
     #Valor muito baixo foto para cima, valor muito alto foto para baixo
-    centro_y = 214
+    centro_y = 530
 
     pos_x = int(centro_x - diametro / 2)
     pos_y = int(centro_y - diametro / 2)
@@ -82,12 +82,12 @@ def gerar_cracha(nome, foto_file):
     draw = ImageDraw.Draw(base)
 
     # TAMANHO AUTOMÁTICO
-    if len(nome) > 30:
-        tamanho_fonte = 42
-    elif len(nome) > 20:
-        tamanho_fonte = 50
+    if len(nome) > 25:
+        tamanho_fonte = 40
+    elif len(nome) > 15:
+        tamanho_fonte = 48
     else:
-        tamanho_fonte = 68
+        tamanho_fonte = 65
 
     # ==========================================
     # ALTERAR FONTE AQUI
@@ -117,29 +117,38 @@ def gerar_cracha(nome, foto_file):
     largura_texto = bbox[2] - bbox[0]
     altura_texto = bbox[3] - bbox[1]
 
+
     # ==================================================
     # FAIXA BRANCA
     # ==================================================
 
-    faixa_x = 35
+    faixa_x = 190
     faixa_y = 930
 
-    faixa_largura = 730
+    faixa_largura = 630
     faixa_altura = 120
 
+    # Centro da faixa
     centro_faixa_x = faixa_x + (faixa_largura / 2)
     centro_faixa_y = faixa_y + (faixa_altura / 2)
 
-    x_texto = centro_faixa_x - (largura_texto / 2)
+    # Ajustes finos da posição do nome
+    deslocamento_x = 15    # Positivo = direita | Negativo = esquerda
+    deslocamento_y = 10   # Negativo = cima | Positivo = baixo
 
-    y_texto = centro_faixa_y - (altura_texto / 2) - 15
+    # Calcula os limites reais do texto
+    bbox = draw.textbbox((0, 0), nome, font=fonte)
 
-    draw.text(
-        (x_texto, y_texto),
-        nome,
-        fill=cor_nome,
-        font=fonte
-    )
+    largura_texto = bbox[2] - bbox[0]
+    altura_texto = bbox[3] - bbox[1]
+
+    # Centraliza o nome na faixa
+    x_texto = centro_faixa_x - (largura_texto / 2) - bbox[0] + deslocamento_x
+    y_texto = centro_faixa_y - (altura_texto / 2) - bbox[1] + deslocamento_y
+
+    draw.text((x_texto, y_texto), nome, fill=cor_nome, font=fonte)
+
+
 
     # ==================================================
     # GERAR IMAGEM EM MEMÓRIA
