@@ -7,8 +7,10 @@ from io import BytesIO
 from functools import wraps
 
 from werkzeug.security import check_password_hash
+from werkzeug.exceptions import RequestEntityTooLarge
 
 import gspread
+from gspread.utils import rowcol_to_a1
 from google.oauth2.service_account import Credentials
 
 import cloudinary
@@ -26,7 +28,7 @@ from gerar_cracha import gerar_cracha
 # ══════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO CLOUDINARY
 # ══════════════════════════════════════════════════════════════════
-cloudinary.config(    
+cloudinary.config(
     cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
     api_key=os.environ["CLOUDINARY_API_KEY"],
     api_secret=os.environ["CLOUDINARY_API_SECRET"]
@@ -46,16 +48,13 @@ NOME_ABA_EVENTOS = os.environ.get("SHEET_NAME_EVENTOS", "eventos")
 NOME_ABA_PAGAMENTOS = os.environ.get("SHEET_NAME_PAGAMENTOS", "pagamentos")
 
 # Valor total do retiro (usado para calcular "pago / parcial / pendente").
-# A planilha de inscrições não guarda esse valor, então ele vem de config.
 VALOR_RETIRO = float(os.environ.get("VALOR_RETIRO", "100.00"))
 
 # Valor extra cobrado de quem optar por adquirir a camiseta do evento.
 VALOR_CAMISETA = float(os.environ.get("VALOR_CAMISETA", "50.00"))
 
 # Número máximo de inscrições aceitas para esta edição do retiro.
-# Para abrir mais vagas no futuro (ex.: alguém desistiu, ou a coordenação
-# decidiu aumentar o limite), basta mudar essa variável de ambiente e
-# reiniciar o servidor — não precisa alterar o código.
+# Para abrir mais vagas, mude essa variável de ambiente e reinicie o servidor.
 VAGAS_TOTAL = int(os.environ.get("VAGAS_TOTAL", "80"))
 
 # ══════════════════════════════════════════════════════════════════
@@ -64,7 +63,6 @@ VAGAS_TOTAL = int(os.environ.get("VAGAS_TOTAL", "80"))
 # ADMIN_EMAIL: e-mail de acesso da coordenação.
 # ADMIN_SENHA_HASH: gerado uma vez com:
 #   python3 -c "from werkzeug.security import generate_password_hash as g; print(g('sua_senha_aqui'))"
-# e colado como variável de ambiente (nunca a senha em texto puro).
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "")
 ADMIN_SENHA_HASH = os.environ.get("ADMIN_SENHA_HASH", "")
 
@@ -186,20 +184,9 @@ def parse_date(raw):
 
 def normalizar_foto(foto_file, max_dimensao=1600, qualidade=85):
     """
-    Converte a foto enviada pelo formulário (que pode vir em HEIC/HEIF do
-    iPhone, WEBP, PNG, etc.) para um JPEG padrão, já com a orientação EXIF
-    corrigida, e redimensiona se estiver maior que o necessário.
-
-    O redimensionamento é feito aqui no servidor como uma segurança extra:
-    a compressão do lado do navegador (JS) pode ser pulada (ex.: fotos
-    HEIC, que o navegador não consegue abrir em canvas) ou falhar por
-    qualquer outro motivo, então o backend garante que a imagem final
-    nunca chega gigante — tanto pro upload no Cloudinary quanto pra
-    geração do crachá.
-
-    Isso é feito ANTES de qualquer outra coisa, para que tanto a geração do
-    crachá quanto o upload da foto original no Cloudinary usem sempre o
-    mesmo arquivo, num formato e tamanho previsíveis.
+    Converte a foto enviada (HEIC/HEIF do iPhone, WEBP, PNG, etc.) para um
+    JPEG padrão, com a orientação EXIF corrigida, redimensionando se for
+    maior que o necessário. Usada tanto na inscrição quanto no crachá avulso.
 
     Retorna um BytesIO pronto para ser lido (posição já no início).
     """
@@ -261,6 +248,8 @@ CAMPOS_OBRIGATORIOS = [
 
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
+TAMANHOS_VALIDOS = ("PP", "P", "M", "G", "GG", "XG", "XXG")
+
 
 def validar_formulario(form):
     """
@@ -280,8 +269,8 @@ def validar_formulario(form):
     if email and not EMAIL_REGEX.match(email):
         erros.append("Informe um e-mail válido.")
 
-    # A camiseta agora é opcional: modelo e tamanho só são obrigatórios
-    # para quem marcou o checkbox de aceite da camiseta (+ R$ 50,00).
+    # A camiseta é opcional: modelo e tamanho só são obrigatórios
+    # para quem marcou o checkbox de aceite da camiseta.
     if (form.get("aceite_camiseta") or "").strip() == "sim":
 
         if not (form.get("modelo_camiseta") or "").strip():
@@ -308,11 +297,53 @@ def validar_formulario(form):
     return erros
 
 
+# ══════════════════════════════════════════════════════════════════
+# PLANILHA DE INSCRIÇÕES — ESTRUTURA DAS COLUNAS
+# ══════════════════════════════════════════════════════════════════
+# A ordem tem que bater EXATAMENTE com o planilha.append_row(...) da
+# rota /enviar. Colunas (A=1 ...):
+#   1 nome            2 telefone         3 email           4 data_nascimento
+#   5 aceite_camiseta 6 modelo_camiseta  7 tamanho_camiseta
+#   8 nome_responsavel 9 grau_parentesco 10 telefone_responsavel
+#   11 retiro_ant 12 expectativa 13 chamou_ret 14 ansiedade
+#   15 carne_sex 16 alergia 17 descricao_alergia 18 remedio
+#   19 nome_medicamento 20 necessidade 21 descricao_necessidade
+#   22 transporte 23 carona 24 forma_pagamento 25 valor_total
+#   26 direito_de_imag 27 link_foto 28 link_cracha
+#   29 data_inscricao 30 status
+COLUNAS_INSCRICAO = 29  # colunas de dados lidas (1–29); a 30 é o status
+COL_VALOR_TOTAL = 25
+COL_STATUS = 30
+
+# Campo editável (nome usado pelo front) → número da coluna na planilha.
+COLUNAS_EDITAVEIS = {
+    "nome": 1, "telefone": 2, "email": 3, "data_nascimento": 4,
+    "aceite_camiseta": 5, "modelo_camiseta": 6, "tamanho_camiseta": 7,
+    "nome_responsavel": 8, "grau_parentesco": 9, "telefone_responsavel": 10,
+    "retiro_ant": 11, "expectativa": 12, "chamou_ret": 13, "ansiedade": 14,
+    "carne_sex": 15, "alergia": 16, "descricao_alergia": 17,
+    "remedio": 18, "nome_medicamento": 19,
+    "necessidade": 20, "descricao_necessidade": 21,
+    "transporte": 22, "carona": 23,
+    "forma_pagamento": 24,
+    "direito_de_imag": 26,
+}
+
+
+def _status_da_linha(linha):
+    """
+    Status da inscrição (coluna 30). Inscrições antigas sem status
+    são consideradas ATIVAS.
+    """
+    if len(linha) > 29 and linha[29].strip():
+        return linha[29].strip().upper()
+    return "ATIVA"
+
+
 def contar_inscritos(planilha):
     """
     Conta somente as inscrições válidas.
-    Inscrições com status 'DUPLICADA' ou 'CANCELADA'
-    não ocupam uma vaga.
+    Inscrições com status 'DUPLICADA' ou 'CANCELADA' não ocupam vaga.
     """
 
     linhas = planilha.get_all_values()
@@ -327,15 +358,7 @@ def contar_inscritos(planilha):
         if not linha or not linha[0].strip():
             continue
 
-        # Status está na coluna 30.
-        # Como Python começa contando do zero, o índice é 29.
-        #
-        # Se a inscrição for antiga e ainda não tiver Status,
-        # ela será considerada ATIVA.
-        status = linha[29].strip().upper() if len(linha) > 29 else "ATIVA"
-
-        # Não conta duplicadas nem canceladas
-        if status not in ("DUPLICADA", "CANCELADA"):
+        if _status_da_linha(linha) not in ("DUPLICADA", "CANCELADA"):
             total += 1
 
     return total
@@ -359,10 +382,25 @@ def row_to_event(row, idx):
 # ══════════════════════════════════════════════════════════════════
 # DASHBOARD DA COORDENAÇÃO — LEITURA DOS PARTICIPANTES
 # ══════════════════════════════════════════════════════════════════
-# A ordem abaixo tem que bater EXATAMENTE com a ordem das colunas usada
-# em planilha.append_row(...) na rota /enviar, mais a coluna extra
-# "data_inscricao" adicionada ao final (ver comentário lá).
-COLUNAS_INSCRICAO = 29  # 28 campos do formulário + 1 de timestamp
+
+def _parse_valor(bruto):
+    """
+    Converte o valor lido da planilha ('50', '50.5', '50,5', 'R$ 1.250,00')
+    em float. Aceita tanto planilha em formato pt-BR quanto en-US.
+    """
+    texto = str(bruto or "").replace("R$", "").strip()
+
+    if not texto:
+        return 0.0
+
+    if "," in texto:
+        # formato brasileiro: ponto = milhar, vírgula = decimal
+        texto = texto.replace(".", "").replace(",", ".")
+
+    try:
+        return float(texto)
+    except ValueError:
+        return 0.0
 
 
 def _pagamentos_por_participante():
@@ -376,24 +414,26 @@ def _pagamentos_por_participante():
 
     try:
         aba = get_aba_pagamentos()
-        for registro in aba.get_all_records():
 
-            pid_bruto = registro.get("participante_id")
+        # Colunas: A participante_id | B data | C valor | D obs | E registrado_em
+        # Lido por posição para que o nº da linha seja exato: ele vira o "id"
+        # do lançamento e é usado para excluí-lo.
+        linhas = aba.get_all_values()
+
+        for numero_linha, linha in enumerate(linhas[1:], start=2):
+
+            linha = linha + [""] * (5 - len(linha))
 
             try:
-                pid = int(pid_bruto)
+                pid = int(str(linha[0]).strip())
             except (TypeError, ValueError):
                 continue
 
-            try:
-                valor = float(registro.get("valor") or 0)
-            except (TypeError, ValueError):
-                valor = 0.0
-
             agrupado.setdefault(pid, []).append({
-                "data": parse_date(str(registro.get("data", ""))),
-                "valor": valor,
-                "obs": str(registro.get("obs") or ""),
+                "id": numero_linha,
+                "data": parse_date(str(linha[1])),
+                "valor": _parse_valor(linha[2]),
+                "obs": str(linha[3] or ""),
             })
 
     except Exception as exc:
@@ -402,16 +442,18 @@ def _pagamentos_por_participante():
     return agrupado
 
 
-def carregar_participantes():
+def carregar_participantes(incluir_inativos=False):
     """
     Lê a aba principal (inscrições) linha a linha e monta a lista de
-    participantes no formato que o dashboard (admin.js) espera, já
-    com o histórico de pagamentos de cada um.
+    participantes no formato que o dashboard espera, já com o histórico
+    de pagamentos de cada um.
 
-    Usa get_all_values() (por posição), não get_all_records() (por
-    cabeçalho), porque o que garante a ordem das colunas aqui é a
-    própria rota /enviar — não depende do texto exato do cabeçalho
-    da planilha.
+    incluir_inativos=False (padrão): esconde DUPLICADA/CANCELADA (view
+    "Inscritos"). incluir_inativos=True: devolve todos, com o campo
+    "status" (view "Editar dados", para poder reativar).
+
+    O "id" de cada participante é o número da linha na planilha — por
+    isso nunca apague linhas; cancele pelo dashboard.
     """
 
     planilha = get_planilha()
@@ -435,29 +477,12 @@ def carregar_participantes():
         if not linha[0].strip():
             continue  # linha em branco no meio da planilha
 
-        # =========================================================
-        # VERIFICA O STATUS DA INSCRIÇÃO
-        # =========================================================
+        status = _status_da_linha(linha)
 
-        # Status está na coluna 30 da planilha
-        # Como o Python começa no índice 0, usamos linha[29].
-        #
-        # Inscrições antigas que ainda não possuem Status
-        # serão consideradas ATIVAS.
-        status = linha[29].strip().upper() if len(linha) > 29 else "ATIVA"
-
-        # Não mostrar inscrições duplicadas ou canceladas
-        # na dashboard.
-        if status in ("DUPLICADA", "CANCELADA"):
+        if status in ("DUPLICADA", "CANCELADA") and not incluir_inativos:
             continue
 
-        # =========================================================
-        # VALOR TOTAL
-        # =========================================================
-
-        # Inscrições antigas (feitas antes da camiseta virar opcional)
-        # não têm valor_total gravado; nesse caso, cai no valor cheio
-        # do retiro.
+        # Inscrições antigas (sem valor_total gravado) caem no valor cheio.
         try:
             valor_total = float(linha[24]) if linha[24].strip() else VALOR_RETIRO
         except ValueError:
@@ -465,6 +490,7 @@ def carregar_participantes():
 
         participante = {
             "id": i,
+            "status": status,
             "nome": linha[0],
             "telefone": linha[1],
             "email": linha[2],
@@ -549,24 +575,27 @@ app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024
 # aleatório e fixo — se ele mudar, todo mundo é deslogado.
 app.secret_key = os.environ.get("SECRET_KEY", "chave-de-desenvolvimento-trocar-em-producao")
 
-from werkzeug.exceptions import RequestEntityTooLarge
 
 # ══════════════════════════════════════════════════════════════════
-# ROTAS
+# ROTAS PÚBLICAS
 # ══════════════════════════════════════════════════════════════════
 
 @app.errorhandler(RequestEntityTooLarge)
 def erro_arquivo_grande(e):
     """
     Se o arquivo enviado (geralmente a foto) ultrapassar o MAX_CONTENT_LENGTH,
-    mostra uma mensagem amigável no próprio formulário em vez da tela de
-    erro genérica do servidor.
+    mostra uma mensagem amigável. Rotas /admin/api/ recebem JSON.
     """
+
+    if flask.request.path.startswith("/admin/api/"):
+        return flask.jsonify({"erro": "A foto é muito grande (máximo 20 MB)."}), 413
+
     return flask.render_template(
         "formulario.html",
         erro="A foto enviada é muito grande. Tente novamente com uma foto menor, "
              "ou tire um print/captura de tela dela antes de enviar."
     ), 413
+
 
 @app.route("/")
 def home():
@@ -576,8 +605,7 @@ def home():
         vagas_esgotadas = contar_inscritos(planilha) >= VAGAS_TOTAL
     except Exception as exc:
         # Se não conseguir checar a planilha agora, mostra a home normalmente
-        # (com o botão de inscrição) — a checagem definitiva de qualquer forma
-        # acontece de novo no /formulario e no /enviar.
+        # — a checagem definitiva acontece de novo no /formulario e no /enviar.
         print(f"[AVISO VAGAS] {exc}")
         vagas_esgotadas = False
 
@@ -591,9 +619,6 @@ def formulario():
         planilha = get_planilha()
         vagas_esgotadas = contar_inscritos(planilha) >= VAGAS_TOTAL
     except Exception as exc:
-        # Se não conseguir checar a planilha agora, deixa o formulário
-        # abrir normalmente — a checagem definitiva acontece de novo
-        # no /enviar antes de gravar a inscrição.
         print(f"[AVISO VAGAS] {exc}")
         vagas_esgotadas = False
 
@@ -608,12 +633,9 @@ def agenda():
 @app.route("/api/events")
 def api_events():
     try:
-        creds = get_credenciais()
-        cliente_sheet = gspread.authorize(creds)
-
         sheet = get_aba_eventos()
         rows = sheet.get_all_records()
-        
+
         events = [
             row_to_event(row, i)
             for i, row in enumerate(rows)
@@ -627,7 +649,7 @@ def api_events():
 
 
 # ══════════════════════════════════════════════════════════════════
-# ÁREA DA COORDENAÇÃO
+# ÁREA DA COORDENAÇÃO — LOGIN
 # ══════════════════════════════════════════════════════════════════
 
 @app.route("/admin")
@@ -673,14 +695,133 @@ def admin_dashboard():
     return flask.render_template("dashboard.html")
 
 
+# ══════════════════════════════════════════════════════════════════
+# ÁREA DA COORDENAÇÃO — PARTICIPANTES
+# ══════════════════════════════════════════════════════════════════
+
 @app.route("/admin/api/participantes")
 @login_requerido
 def admin_api_participantes():
+    """?todos=1 inclui canceladas/duplicadas (usado na aba 'Editar dados')."""
+
+    incluir_inativos = flask.request.args.get("todos") == "1"
+
     try:
-        return flask.jsonify(carregar_participantes())
+        return flask.jsonify(carregar_participantes(incluir_inativos=incluir_inativos))
     except Exception as exc:
         print(f"[ERRO API PARTICIPANTES] {exc}")
         return flask.jsonify({"erro": "Não foi possível carregar os participantes agora."}), 500
+
+
+@app.route("/admin/api/participantes/<int:participante_id>", methods=["PUT"])
+@login_requerido
+def admin_api_editar_participante(participante_id):
+    """Edita os dados de um inscrito direto na planilha (id = nº da linha)."""
+
+    if participante_id < 2:
+        return flask.jsonify({"erro": "Inscrito inválido."}), 400
+
+    dados = flask.request.get_json(silent=True) or {}
+
+    novos = {}
+    for campo in COLUNAS_EDITAVEIS:
+        if campo in dados:
+            novos[campo] = str(dados[campo] if dados[campo] is not None else "").strip()
+
+    # ── validações ──
+    if "nome" in novos and not novos["nome"]:
+        return flask.jsonify({"erro": "O nome não pode ficar vazio."}), 400
+
+    if "email" in novos and not EMAIL_REGEX.match(novos["email"]):
+        return flask.jsonify({"erro": "Informe um e-mail válido."}), 400
+
+    if "data_nascimento" in novos and not re.match(r"^\d{4}-\d{2}-\d{2}$", novos["data_nascimento"]):
+        return flask.jsonify({"erro": "Informe uma data de nascimento válida."}), 400
+
+    # ── camiseta: limpa modelo/tamanho se não aceitou; recalcula o valor ──
+    if "aceite_camiseta" in novos:
+
+        if novos["aceite_camiseta"] == "sim":
+            if novos.get("modelo_camiseta") not in ("masculino", "feminino"):
+                return flask.jsonify({"erro": "Selecione o modelo de camiseta."}), 400
+            if novos.get("tamanho_camiseta") not in TAMANHOS_VALIDOS:
+                return flask.jsonify({"erro": "Selecione o tamanho de camiseta."}), 400
+        else:
+            novos["aceite_camiseta"] = ""
+            novos["modelo_camiseta"] = ""
+            novos["tamanho_camiseta"] = ""
+
+    # ── descrições condicionais: exige se "sim", limpa se não ──
+    for pergunta, descricao in (("alergia", "descricao_alergia"),
+                                ("remedio", "nome_medicamento"),
+                                ("necessidade", "descricao_necessidade")):
+        if novos.get(pergunta) == "sim":
+            if not novos.get(descricao):
+                return flask.jsonify({
+                    "erro": "Preencha a descrição dos itens de saúde marcados como \"Sim\"."
+                }), 400
+        elif pergunta in novos:
+            novos[descricao] = ""
+
+    try:
+        planilha = get_planilha()
+
+        # Confere que a linha existe e tem alguém
+        if not planilha.cell(participante_id, 1).value:
+            return flask.jsonify({"erro": "Inscrito não encontrado."}), 404
+
+        atualizacoes = [
+            {"range": rowcol_to_a1(participante_id, COLUNAS_EDITAVEIS[campo]), "values": [[valor]]}
+            for campo, valor in novos.items()
+        ]
+
+        if "aceite_camiseta" in novos:
+            valor_total = VALOR_RETIRO + (VALOR_CAMISETA if novos["aceite_camiseta"] == "sim" else 0)
+            atualizacoes.append({
+                "range": rowcol_to_a1(participante_id, COL_VALOR_TOTAL),
+                "values": [[valor_total]]
+            })
+
+        # RAW: grava exatamente o texto digitado (evita "+55..." virar fórmula)
+        planilha.batch_update(atualizacoes, value_input_option="RAW")
+
+    except Exception as exc:
+        print(f"[ERRO EDITAR PARTICIPANTE] {exc}")
+        return flask.jsonify({"erro": "Não foi possível salvar na planilha agora."}), 500
+
+    return flask.jsonify({"ok": True})
+
+
+@app.route("/admin/api/participantes/<int:participante_id>/status", methods=["POST"])
+@login_requerido
+def admin_api_status_participante(participante_id):
+    """Cancela (CANCELADA) ou reativa (ATIVA) uma inscrição. Não apaga a linha."""
+
+    if participante_id < 2:
+        return flask.jsonify({"erro": "Inscrito inválido."}), 400
+
+    dados = flask.request.get_json(silent=True) or {}
+    novo = (dados.get("status") or "").strip().upper()
+
+    if novo not in ("ATIVA", "CANCELADA"):
+        return flask.jsonify({"erro": "Situação inválida."}), 400
+
+    try:
+        planilha = get_planilha()
+
+        if not planilha.cell(participante_id, 1).value:
+            return flask.jsonify({"erro": "Inscrito não encontrado."}), 404
+
+        if novo == "ATIVA" and contar_inscritos(planilha) >= VAGAS_TOTAL:
+            return flask.jsonify({"erro": "Não há vagas livres para reativar esta inscrição."}), 409
+
+        planilha.update_cell(participante_id, COL_STATUS, novo)
+
+    except Exception as exc:
+        print(f"[ERRO STATUS PARTICIPANTE] {exc}")
+        return flask.jsonify({"erro": "Não foi possível atualizar a planilha agora."}), 500
+
+    return flask.jsonify({"ok": True})
 
 
 @app.route("/admin/api/participantes/<int:participante_id>/pagamentos", methods=["POST"])
@@ -713,18 +854,103 @@ def admin_api_add_pagamento(participante_id):
     return flask.jsonify({"ok": True})
 
 
+@app.route("/admin/api/participantes/<int:participante_id>/pagamentos/<int:linha>", methods=["DELETE"])
+@login_requerido
+def admin_api_remover_pagamento(participante_id, linha):
+    """
+    Exclui um lançamento da aba 'pagamentos' (linha = nº da linha na aba).
+
+    Antes de apagar, confere se a linha ainda pertence a esse participante e
+    tem o mesmo valor que a tela mostrava. Como apagar uma linha desloca as
+    de baixo, isso evita remover o lançamento errado se a aba tiver mudado
+    desde que o dashboard foi carregado.
+    """
+
+    if linha < 2:
+        return flask.jsonify({"erro": "Lançamento inválido."}), 400
+
+    dados = flask.request.get_json(silent=True) or {}
+
+    try:
+        aba = get_aba_pagamentos()
+
+        valores = aba.row_values(linha)
+        valores = valores + [""] * (5 - len(valores))
+
+        if str(valores[0]).strip() != str(participante_id):
+            return flask.jsonify({
+                "erro": "Esse lançamento mudou na planilha. Recarregue a lista e tente novamente."
+            }), 409
+
+        if dados.get("valor") is not None:
+            try:
+                esperado = float(dados["valor"])
+            except (TypeError, ValueError):
+                return flask.jsonify({"erro": "Valor inválido."}), 400
+
+            if abs(_parse_valor(valores[2]) - esperado) > 0.001:
+                return flask.jsonify({
+                    "erro": "Esse lançamento mudou na planilha. Recarregue a lista e tente novamente."
+                }), 409
+
+        aba.delete_rows(linha)
+
+    except Exception as exc:
+        print(f"[ERRO REMOVER PAGAMENTO] {exc}")
+        return flask.jsonify({"erro": "Não foi possível excluir o lançamento agora."}), 500
+
+    return flask.jsonify({"ok": True})
+
+
+# ══════════════════════════════════════════════════════════════════
+# ÁREA DA COORDENAÇÃO — CRACHÁ AVULSO
+# ══════════════════════════════════════════════════════════════════
+
+@app.route("/admin/api/cracha", methods=["POST"])
+@login_requerido
+def admin_api_cracha():
+    """
+    Gera um crachá avulso (músicos, pregadores, convidados). Prévia e
+    download usam o mesmo PNG. Não grava nada na planilha nem no Cloudinary.
+    """
+
+    nome = (flask.request.form.get("nome") or "").strip()
+    foto = flask.request.files.get("foto")
+
+    if not nome:
+        return flask.jsonify({"erro": "Informe o nome."}), 400
+
+    if len(nome) > 60:
+        return flask.jsonify({"erro": "Nome muito longo (máximo 60 caracteres)."}), 400
+
+    if not foto or not foto.filename:
+        return flask.jsonify({"erro": "Envie uma foto."}), 400
+
+    try:
+        foto_normalizada = normalizar_foto(foto)
+        buffer = gerar_cracha(nome, foto_normalizada)
+    except Exception as exc:
+        print(f"[ERRO CRACHA AVULSO] {exc}")
+        return flask.jsonify({"erro": "Não foi possível processar essa foto. Tente outra."}), 400
+
+    resposta = flask.send_file(buffer, mimetype="image/png")
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
+
+
+# ══════════════════════════════════════════════════════════════════
+# INSCRIÇÃO (FORMULÁRIO PÚBLICO)
+# ══════════════════════════════════════════════════════════════════
+
 @app.route("/enviar", methods=["POST"])
 def enviar():
 
-    # ══════════════════════════════════════════════════════════════
-    # VALIDAÇÃO SERVER-SIDE
-    # (o JS do formulário já valida no navegador, mas nunca confiamos
-    # só nisso: se o JS falhar ou for pulado, o servidor barra aqui)
-    # ══════════════════════════════════════════════════════════════
-    # Guardado para virar a última coluna da planilha (usado pelo dashboard
-    # da coordenação pra ordenar por "últimos/primeiros inscritos").
+    # Guardado para virar a coluna "data_inscricao" (ordenação no dashboard).
     data_hora_inscricao = datetime.now().isoformat()
 
+    # ══════════════════════════════════════════════════════════════
+    # VALIDAÇÃO SERVER-SIDE
+    # ══════════════════════════════════════════════════════════════
     erros = validar_formulario(flask.request.form)
 
     if erros:
@@ -745,8 +971,6 @@ def enviar():
 
     # ══════════════════════════════════════════════════════════════
     # LIMITE DE VAGAS
-    # Checado aqui, antes de processar foto/crachá, para não gastar
-    # tempo/processamento numa inscrição que não poderá ser aceita.
     # ══════════════════════════════════════════════════════════════
     if contar_inscritos(planilha) >= VAGAS_TOTAL:
         return flask.render_template(
@@ -754,159 +978,53 @@ def enviar():
             vagas_esgotadas=True
         ), 400
 
-    # ══════════════════════════════════════════════════════════════
-    # DADOS PESSOAIS
-    # ══════════════════════════════════════════════════════════════
-    nome = flask.request.form.get("nome", "").strip()
+    def campo(nome_campo):
+        return flask.request.form.get(nome_campo, "").strip()
 
-    telefone = flask.request.form.get(
-        "telefone",
-        ""
-    ).strip()
+    # Dados pessoais
+    nome = campo("nome")
+    telefone = campo("telefone")
+    email = campo("email")
+    data_nascimento = campo("data_nascimento")
 
-    email = flask.request.form.get(
-        "email",
-        ""
-    ).strip()
+    # Camiseta ("sim" quando marcado, "" quando desmarcado)
+    aceite_camiseta = campo("aceite_camiseta")
+    modelo_camiseta = campo("modelo_camiseta")
+    tamanho_camiseta = campo("tamanho_camiseta")
 
-    data_nascimento = flask.request.form.get(
-        "data_nascimento",
-        ""
-    ).strip()
+    # Responsável
+    nome_responsavel = campo("nome_responsavel")
+    grau_parentesco = campo("grau_parentesco")
+    telefone_responsavel = campo("telefone_responsavel")
 
-    # ══════════════════════════════════════════════════════════════
-    # CAMISETA
-    # ══════════════════════════════════════════════════════════════
-    aceite_camiseta = flask.request.form.get(
-        "aceite_camiseta",
-        ""
-    ).strip()  # "sim" quando marcado, "" quando desmarcado
+    # Sobre você
+    retiro_ant = campo("retiro_ant")
+    expectativa = campo("expectativa")
+    chamou_ret = campo("chamou_ret")
+    ansiedade = campo("ansiedade")
 
-    modelo_camiseta = flask.request.form.get(
-        "modelo_camiseta",
-        ""
-    ).strip()
+    # Saúde
+    carne_sex = campo("carne_sex")
+    alergia = campo("alergia")
+    descricao_alergia = campo("descricao_alergia")
+    remedio = campo("remedio")
+    nome_medicamento = campo("nome_medicamento")
+    necessidade = campo("necessidade")
+    descricao_necessidade = campo("descricao_necessidade")
 
-    tamanho_camiseta = flask.request.form.get(
-        "tamanho_camiseta",
-        ""
-    ).strip()
+    # Transporte ("carona" só existe quando transporte = "proprio")
+    transporte = campo("transporte")
+    carona = campo("carona")
 
-    # ══════════════════════════════════════════════════════════════
-    # RESPONSÁVEL
-    # ══════════════════════════════════════════════════════════════
-    nome_responsavel = flask.request.form.get(
-        "nome_responsavel",
-        ""
-    ).strip()
-
-    grau_parentesco = flask.request.form.get(
-        "grau_parentesco",
-        ""
-    ).strip()
-
-    telefone_responsavel = flask.request.form.get(
-        "telefone_responsavel",
-        ""
-    ).strip()
-
-    # ══════════════════════════════════════════════════════════════
-    # SOBRE VOCÊ
-    # ══════════════════════════════════════════════════════════════
-    retiro_ant = flask.request.form.get(
-        "retiro_ant",
-        ""
-    ).strip()
-
-    expectativa = flask.request.form.get(
-        "expectativa",
-        ""
-    ).strip()
-
-    chamou_ret = flask.request.form.get(
-        "chamou_ret",
-        ""
-    ).strip()
-
-    ansiedade = flask.request.form.get(
-        "ansiedade",
-        ""
-    ).strip()
-
-    # ══════════════════════════════════════════════════════════════
-    # SAÚDE
-    # ══════════════════════════════════════════════════════════════
-    carne_sex = flask.request.form.get(
-        "carne_sex",
-        ""
-    ).strip()
-
-    alergia = flask.request.form.get(
-        "alergia",
-        ""
-    ).strip()
-
-    descricao_alergia = flask.request.form.get(
-        "descricao_alergia",
-        ""
-    ).strip()
-
-    remedio = flask.request.form.get(
-        "remedio",
-        ""
-    ).strip()
-
-    nome_medicamento = flask.request.form.get(
-        "nome_medicamento",
-        ""
-    ).strip()
-
-    necessidade = flask.request.form.get(
-        "necessidade",
-        ""
-    ).strip()
-
-    descricao_necessidade = flask.request.form.get(
-        "descricao_necessidade",
-        ""
-    ).strip()
-
-    # ══════════════════════════════════════════════════════════════
-    # TRANSPORTE
-    # ══════════════════════════════════════════════════════════════
-    transporte = flask.request.form.get(
-        "transporte",
-        ""
-    ).strip()
-
-    # Só existe quando "transporte" = "proprio" (campo condicional no form)
-    carona = flask.request.form.get(
-        "carona",
-        ""
-    ).strip()
-
-    # ══════════════════════════════════════════════════════════════
-    # PAGAMENTO
-    # ══════════════════════════════════════════════════════════════
-    forma_pagamento = flask.request.form.get(
-        "forma_pagamento",
-        ""
-    ).strip()
-
-    # Valor final da inscrição: soma o adicional da camiseta apenas
-    # para quem marcou o checkbox de aceite.
+    # Pagamento: soma o adicional da camiseta apenas para quem aceitou.
+    forma_pagamento = campo("forma_pagamento")
     valor_total = VALOR_RETIRO + (VALOR_CAMISETA if aceite_camiseta == "sim" else 0)
 
-    # ══════════════════════════════════════════════════════════════
-    # FOTO
-    # ══════════════════════════════════════════════════════════════
+    # Imagem / foto
+    direito_de_imag = campo("direito_de_imag")
+
     link_foto = ""
     link_cracha = ""
-
-    direito_de_imag = flask.request.form.get(
-        "direito_de_imag",
-        ""
-    ).strip()
 
     foto = flask.request.files.get("foto_participante")
 
@@ -914,23 +1032,14 @@ def enviar():
 
         try:
 
-            # ══════════════════════════════════════════════════════
-            # 1) NORMALIZA A FOTO PRIMEIRO (HEIC/HEIF/PNG/WEBP → JPEG)
-            # ══════════════════════════════════════════════════════
+            # 1) Normaliza a foto (HEIC/HEIF/PNG/WEBP → JPEG)
             foto_normalizada = normalizar_foto(foto)
 
-            # ══════════════════════════════════════════════════════
-            # 2) GERA O CRACHÁ A PARTIR DA FOTO JÁ NORMALIZADA
-            # ══════════════════════════════════════════════════════
+            # 2) Gera o crachá a partir da foto já normalizada
             foto_normalizada.seek(0)
-            buffer_cracha = gerar_cracha(
-                nome,
-                foto_normalizada
-            )
+            buffer_cracha = gerar_cracha(nome, foto_normalizada)
 
-            # ══════════════════════════════════════════════════════
-            # 3) UPLOAD DA FOTO ORIGINAL (já normalizada) NO CLOUDINARY
-            # ══════════════════════════════════════════════════════
+            # 3) Upload da foto (já normalizada) no Cloudinary
             foto_normalizada.seek(0)
             resultado_foto = cloudinary.uploader.upload(
                 foto_normalizada,
@@ -940,9 +1049,7 @@ def enviar():
 
             link_foto = resultado_foto["secure_url"]
 
-            # ══════════════════════════════════════════════════════
-            # 4) UPLOAD DO CRACHÁ GERADO NO CLOUDINARY
-            # ══════════════════════════════════════════════════════
+            # 4) Upload do crachá gerado no Cloudinary
             resultado_cracha = cloudinary.uploader.upload(
                 buffer_cracha,
                 folder="crachas_desperta",
@@ -958,9 +1065,7 @@ def enviar():
 
             print(f"[ERRO CLOUDINARY] {e}")
 
-            # Não grava "Erro: ..." como se fosse um link válido na
-            # planilha. A inscrição é interrompida e o usuário é avisado,
-            # em vez de seguir em frente com dados incompletos/errados.
+            # Interrompe a inscrição em vez de gravar dados incompletos.
             return flask.render_template(
                 "formulario.html",
                 erro="Não foi possível processar sua foto agora. "
@@ -970,15 +1075,11 @@ def enviar():
 
     # ══════════════════════════════════════════════════════════════
     # SALVAR NA PLANILHA
-    # ══════════════════════════════════════════════════════════════
-    # (removidos os prints de depuração com dados pessoais dos
-    # inscritos — nome, telefone, alergias, medicamentos etc. não
-    # devem ir para o log do servidor em produção)
+    # (sem prints com dados pessoais dos inscritos nos logs)
     #
-    # IMPORTANTE: a ordem abaixo precisa bater exatamente com a ordem
-    # das colunas na planilha "VII Desperta" (aba de inscrições).
-    # Se você reordenar algo aqui, reordene a mesma coluna na planilha.
-
+    # IMPORTANTE: a ordem abaixo precisa bater com a ordem das colunas
+    # documentada acima (e com COLUNAS_EDITAVEIS).
+    # ══════════════════════════════════════════════════════════════
     planilha.append_row([
 
         nome,
@@ -1023,15 +1124,13 @@ def enviar():
 
     ], value_input_option="USER_ENTERED")
 
-    # ══════════════════════════════════════════════════════════════
-    # RETORNO
-    # ══════════════════════════════════════════════════════════════
     return flask.render_template(
         "formulario.html",
         sucesso=True,
         nome=nome,
         valor_total=valor_total
     )
+
 
 # ══════════════════════════════════════════════════════════════════
 # INICIAR APP
