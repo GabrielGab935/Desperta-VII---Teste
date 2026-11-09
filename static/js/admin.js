@@ -741,6 +741,8 @@
       if (evento.key === "Escape") fecharModal();
     });
 
+    window.recarregarParticipantes = carregarParticipantes;
+    
     /* ── INICIALIZAÇÃO ── */
 
     carregarParticipantes();
