@@ -27,8 +27,9 @@ from gerar_cracha import gerar_cracha
 
 # ══════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO CLOUDINARY
+# (as chaves ficam nas variáveis de ambiente, nunca no código)
 # ══════════════════════════════════════════════════════════════════
-cloudinary.config(
+cloudinary.config(    
     cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
     api_key=os.environ["CLOUDINARY_API_KEY"],
     api_secret=os.environ["CLOUDINARY_API_SECRET"]
@@ -52,6 +53,14 @@ VALOR_RETIRO = float(os.environ.get("VALOR_RETIRO", "100.00"))
 
 # Valor extra cobrado de quem optar por adquirir a camiseta do evento.
 VALOR_CAMISETA = float(os.environ.get("VALOR_CAMISETA", "50.00"))
+
+# Liga/desliga a venda da camiseta no formulário público.
+#   • Desligada (padrão): a seção "Camiseta" some do formulário e o servidor
+#     ignora qualquer dado de camiseta que chegue no envio.
+#   • Para reativar: defina CAMISETA_ATIVA=true nas variáveis de ambiente
+#     (na Vercel, faça um novo deploy depois de alterar).
+# Inscrições que já pediram camiseta continuam normais no dashboard.
+CAMISETA_ATIVA = os.environ.get("CAMISETA_ATIVA", "false").strip().lower() in ("1", "true", "sim", "yes")
 
 # Número máximo de inscrições aceitas para esta edição do retiro.
 # Para abrir mais vagas, mude essa variável de ambiente e reinicie o servidor.
@@ -250,6 +259,11 @@ EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 TAMANHOS_VALIDOS = ("PP", "P", "M", "G", "GG", "XG", "XXG")
 
+# Valores gravados pelo campo "transporte" do formulário
+TRANSPORTE_RESPONSAVEL = "Com meu responsável"
+TRANSPORTE_PROPRIO = "Meu transporte próprio"
+TRANSPORTE_AJUDA = "Preciso de ajuda com transporte"
+
 
 def validar_formulario(form):
     """
@@ -269,9 +283,10 @@ def validar_formulario(form):
     if email and not EMAIL_REGEX.match(email):
         erros.append("Informe um e-mail válido.")
 
-    # A camiseta é opcional: modelo e tamanho só são obrigatórios
-    # para quem marcou o checkbox de aceite da camiseta.
-    if (form.get("aceite_camiseta") or "").strip() == "sim":
+    # Camiseta: só é validada quando a venda está ativa. Nesse caso é
+    # opcional — modelo e tamanho só são obrigatórios para quem marcou o
+    # checkbox de aceite. Com CAMISETA_ATIVA desligada, nada disso é exigido.
+    if CAMISETA_ATIVA and (form.get("aceite_camiseta") or "").strip() == "sim":
 
         if not (form.get("modelo_camiseta") or "").strip():
             erros.append("Selecione o modelo de camiseta.")
@@ -290,8 +305,11 @@ def validar_formulario(form):
     if (form.get("necessidade") or "").strip() == "sim" and not (form.get("descricao_necessidade") or "").strip():
         erros.append("Descreva a necessidade, limitação ou informação importante.")
 
-    # Carona só é obrigatória para quem disse que vai com transporte próprio
-    if (form.get("transporte") or "").strip() == "proprio" and not (form.get("carona") or "").strip():
+    # A pergunta da carona aparece para quem vai com o responsável ou com
+    # transporte próprio (só quem pede ajuda não responde).
+    transporte = (form.get("transporte") or "").strip()
+
+    if transporte in (TRANSPORTE_RESPONSAVEL, TRANSPORTE_PROPRIO) and not (form.get("carona") or "").strip():
         erros.append("Informe se há possibilidade de dar carona para quem necessitar.")
 
     return erros
@@ -574,6 +592,16 @@ app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024
 # Em produção, defina SECRET_KEY nas variáveis de ambiente com um valor
 # aleatório e fixo — se ele mudar, todo mundo é deslogado.
 app.secret_key = os.environ.get("SECRET_KEY", "chave-de-desenvolvimento-trocar-em-producao")
+
+
+@app.context_processor
+def injetar_config():
+    """
+    Deixa 'camiseta_ativa' disponível em todos os templates (inclusive
+    quando o formulário é renderizado de novo com erro/sucesso), sem
+    precisar passar a variável em cada render_template.
+    """
+    return {"camiseta_ativa": CAMISETA_ATIVA}
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -992,6 +1020,13 @@ def enviar():
     modelo_camiseta = campo("modelo_camiseta")
     tamanho_camiseta = campo("tamanho_camiseta")
 
+    # Camiseta desligada: ignora qualquer valor que venha no envio
+    # (impede somar o adicional por uma requisição montada à mão).
+    if not CAMISETA_ATIVA:
+        aceite_camiseta = ""
+        modelo_camiseta = ""
+        tamanho_camiseta = ""
+
     # Responsável
     nome_responsavel = campo("nome_responsavel")
     grau_parentesco = campo("grau_parentesco")
@@ -1012,9 +1047,13 @@ def enviar():
     necessidade = campo("necessidade")
     descricao_necessidade = campo("descricao_necessidade")
 
-    # Transporte ("carona" só existe quando transporte = "proprio")
+    # Transporte ("carona" só é respondida por quem vai com o responsável
+    # ou com transporte próprio; quem pede ajuda não vê essa pergunta)
     transporte = campo("transporte")
     carona = campo("carona")
+
+    if transporte == TRANSPORTE_AJUDA:
+        carona = ""
 
     # Pagamento: soma o adicional da camiseta apenas para quem aceitou.
     forma_pagamento = campo("forma_pagamento")
@@ -1078,7 +1117,8 @@ def enviar():
     # (sem prints com dados pessoais dos inscritos nos logs)
     #
     # IMPORTANTE: a ordem abaixo precisa bater com a ordem das colunas
-    # documentada acima (e com COLUNAS_EDITAVEIS).
+    # documentada acima (e com COLUNAS_EDITAVEIS). As colunas da camiseta
+    # continuam sendo gravadas (vazias) para não deslocar o resto.
     # ══════════════════════════════════════════════════════════════
     planilha.append_row([
 
